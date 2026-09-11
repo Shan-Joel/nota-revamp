@@ -1,0 +1,14 @@
+{
+  "collectionName": "components_sections_orders",
+  "info": { "displayName": "Order", "icon": "shoppingCart" },
+  "options": {},
+  "attributes": {
+    "eyebrow": { "type": "string", "required": true },
+    "headline": { "type": "string", "required": true },
+    "paragraph": { "type": "text", "required": true },
+    "price": { "type": "string", "required": true },
+    "cta": { "type": "component", "repeatable": false, "component": "shared.link", "required": true },
+    "image": { "type": "media", "multiple": false, "required": true, "allowedTypes": ["images"] },
+    "imageAlt": { "type": "string" }
+  }
+}

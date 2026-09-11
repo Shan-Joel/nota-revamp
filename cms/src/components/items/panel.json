@@ -1,0 +1,10 @@
+{
+  "collectionName": "components_items_panels",
+  "info": { "displayName": "Text panel", "icon": "layout" },
+  "options": {},
+  "attributes": {
+    "eyebrow": { "type": "string", "required": true },
+    "headline": { "type": "string", "required": true },
+    "paragraph": { "type": "text", "required": true }
+  }
+}

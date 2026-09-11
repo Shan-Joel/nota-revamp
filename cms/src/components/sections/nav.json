@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_sections_navs",
+  "info": {
+    "displayName": "Navigation",
+    "icon": "apps",
+    "description": "Header logo, menu links (also reused in the footer) and the price pill."
+  },
+  "options": {},
+  "attributes": {
+    "logo": { "type": "string", "required": true },
+    "links": { "type": "component", "repeatable": true, "component": "shared.link" },
+    "cta": { "type": "component", "repeatable": false, "component": "shared.link", "required": true },
+    "ctaPrice": { "type": "string", "required": true }
+  }
+}

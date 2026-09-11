@@ -1,0 +1,14 @@
+{
+  "collectionName": "components_items_captions",
+  "info": {
+    "displayName": "Scene caption",
+    "icon": "quote",
+    "description": "One caption per notebook frame, shown in the same order."
+  },
+  "options": {},
+  "attributes": {
+    "headline": { "type": "string", "required": true },
+    "headlineItalic": { "type": "string" },
+    "body": { "type": "text" }
+  }
+}

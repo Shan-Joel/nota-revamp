@@ -1,0 +1,13 @@
+{
+  "collectionName": "components_sections_philosophies",
+  "info": {
+    "displayName": "Philosophy quote",
+    "icon": "quote",
+    "description": "The centred quote the nav's About link points to."
+  },
+  "options": {},
+  "attributes": {
+    "quote": { "type": "text", "required": true },
+    "body": { "type": "text", "required": true }
+  }
+}

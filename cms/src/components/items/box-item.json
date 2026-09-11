@@ -1,0 +1,13 @@
+{
+  "collectionName": "components_items_box_items",
+  "info": {
+    "displayName": "Box item",
+    "icon": "cube",
+    "description": "Numbered 01, 02, 03… automatically in the order listed."
+  },
+  "options": {},
+  "attributes": {
+    "title": { "type": "string", "required": true },
+    "description": { "type": "text", "required": true }
+  }
+}

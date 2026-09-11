@@ -15,5 +15,9 @@ export default defineConfig({
   },
   vite: {
     plugins: [tailwindcss()],
+    // Strapi lives in cms/ and rewrites files there while running; keep Astro's dev watcher out of it.
+    server: { watch: { ignored: ["**/cms/**"] } },
+    // Pre-bundle GSAP at startup; lazy discovery re-optimizes mid-session and 504s open pages.
+    optimizeDeps: { include: ["gsap", "gsap/ScrollTrigger"] },
   },
 });

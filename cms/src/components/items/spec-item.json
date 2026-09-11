@@ -1,0 +1,8 @@
+{
+  "collectionName": "components_items_spec_items",
+  "info": { "displayName": "Spec item", "icon": "bulletList" },
+  "options": {},
+  "attributes": {
+    "text": { "type": "string", "required": true }
+  }
+}

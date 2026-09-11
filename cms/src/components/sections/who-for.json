@@ -1,0 +1,13 @@
+{
+  "collectionName": "components_sections_who_fors",
+  "info": { "displayName": "Who it's for", "icon": "user" },
+  "options": {},
+  "attributes": {
+    "video": { "type": "media", "multiple": false, "required": true, "allowedTypes": ["videos"] },
+    "headlinePrefix": { "type": "string", "required": true },
+    "headlineItalic": { "type": "string", "required": true },
+    "paragraphLead": { "type": "text", "required": true },
+    "paragraphSecondary": { "type": "text", "required": true },
+    "audiences": { "type": "component", "repeatable": true, "component": "items.audience" }
+  }
+}

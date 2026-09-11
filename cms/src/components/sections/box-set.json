@@ -1,0 +1,13 @@
+{
+  "collectionName": "components_sections_box_sets",
+  "info": { "displayName": "Complete set", "icon": "cube" },
+  "options": {},
+  "attributes": {
+    "heading": { "type": "string", "required": true },
+    "headingItalic": { "type": "string", "required": true },
+    "paragraph": { "type": "text", "required": true },
+    "items": { "type": "component", "repeatable": true, "component": "items.box-item" },
+    "video": { "type": "media", "multiple": false, "required": true, "allowedTypes": ["videos"] },
+    "poster": { "type": "media", "multiple": false, "required": true, "allowedTypes": ["images"] }
+  }
+}

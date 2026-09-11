@@ -1,0 +1,14 @@
+{
+  "collectionName": "components_sections_sync_scenes",
+  "info": {
+    "displayName": "Sync scene (pinned)",
+    "icon": "play",
+    "description": "Pinned scroll scene: frames crossfade in order, one caption per frame."
+  },
+  "options": {},
+  "attributes": {
+    "frames": { "type": "media", "multiple": true, "required": true, "allowedTypes": ["images"] },
+    "firstFrameAlt": { "type": "string" },
+    "captions": { "type": "component", "repeatable": true, "component": "items.caption" }
+  }
+}

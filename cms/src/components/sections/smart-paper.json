@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_sections_smart_papers",
+  "info": { "displayName": "Smart paper", "icon": "picture" },
+  "options": {},
+  "attributes": {
+    "headline": { "type": "string", "required": true },
+    "headlineItalic": { "type": "string", "required": true },
+    "image1": { "type": "media", "multiple": false, "required": true, "allowedTypes": ["images"] },
+    "image1Alt": { "type": "string" },
+    "panel1": { "type": "component", "repeatable": false, "component": "items.panel", "required": true },
+    "panel2": { "type": "component", "repeatable": false, "component": "items.panel", "required": true },
+    "image2": { "type": "media", "multiple": false, "required": true, "allowedTypes": ["images"] },
+    "image2Alt": { "type": "string" }
+  }
+}

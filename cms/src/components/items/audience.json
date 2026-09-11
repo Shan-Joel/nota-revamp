@@ -1,0 +1,13 @@
+{
+  "collectionName": "components_items_audiences",
+  "info": {
+    "displayName": "Audience card",
+    "icon": "user",
+    "description": "Numbered 01, 02, 03… automatically in the order listed."
+  },
+  "options": {},
+  "attributes": {
+    "title": { "type": "string", "required": true },
+    "body": { "type": "text", "required": true }
+  }
+}

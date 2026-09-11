@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_shared_seos",
+  "info": {
+    "displayName": "SEO",
+    "icon": "search",
+    "description": "Browser title, search snippet and social sharing image."
+  },
+  "options": {},
+  "attributes": {
+    "title": { "type": "string", "required": true },
+    "description": { "type": "text", "required": true },
+    "themeColor": { "type": "string", "required": true, "default": "#1a1a19" },
+    "ogImage": { "type": "media", "multiple": false, "required": true, "allowedTypes": ["images"] }
+  }
+}

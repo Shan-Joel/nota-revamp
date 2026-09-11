@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_sections_heroes",
+  "info": {
+    "displayName": "Hero",
+    "icon": "star",
+    "description": "Full-screen intro. Keep the studio pen render as the image: the scroll animation cuts the pen out with a fixed outline."
+  },
+  "options": {},
+  "attributes": {
+    "eyebrow": { "type": "string", "required": true },
+    "headlineLine1": { "type": "string", "required": true },
+    "headlineLine2": { "type": "string", "required": true },
+    "body": { "type": "text", "required": true },
+    "primaryCta": { "type": "component", "repeatable": false, "component": "shared.link", "required": true },
+    "secondaryCta": { "type": "component", "repeatable": false, "component": "shared.link", "required": true },
+    "image": { "type": "media", "multiple": false, "required": true, "allowedTypes": ["images"] },
+    "imageAlt": { "type": "string" }
+  }
+}

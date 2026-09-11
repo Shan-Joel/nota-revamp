@@ -1,11 +1,11 @@
 # nōta — Astro site
 
 Astro rebuild of the nōta homepage. Every text, image and video on the page comes from the Strapi
-CMS in [`../cms`](../cms); this project holds only the layout, styles and GSAP animations.
+CMS in [`cms`](cms); this project holds only the layout, styles and GSAP animations.
 
 ## Running locally
 
-1. Start Strapi from `../cms`:
+1. Start Strapi from `cms`:
 
    ```bash
    npm run develop

@@ -1,0 +1,28 @@
+{
+  "kind": "singleType",
+  "collectionName": "homepages",
+  "info": {
+    "singularName": "homepage",
+    "pluralName": "homepages",
+    "displayName": "Homepage",
+    "description": "Every text, image and video on the nōta homepage, section by section."
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "seo": { "type": "component", "repeatable": false, "component": "shared.seo", "required": true },
+    "nav": { "type": "component", "repeatable": false, "component": "sections.nav", "required": true },
+    "hero": { "type": "component", "repeatable": false, "component": "sections.hero", "required": true },
+    "specs": { "type": "component", "repeatable": false, "component": "sections.specs", "required": true },
+    "philosophy": { "type": "component", "repeatable": false, "component": "sections.philosophy", "required": true },
+    "whoFor": { "type": "component", "repeatable": false, "component": "sections.who-for", "required": true },
+    "syncScene": { "type": "component", "repeatable": false, "component": "sections.sync-scene", "required": true },
+    "smartPaper": { "type": "component", "repeatable": false, "component": "sections.smart-paper", "required": true },
+    "insideBox": { "type": "component", "repeatable": false, "component": "sections.inside-box", "required": true },
+    "boxSet": { "type": "component", "repeatable": false, "component": "sections.box-set", "required": true },
+    "order": { "type": "component", "repeatable": false, "component": "sections.order", "required": true },
+    "footer": { "type": "component", "repeatable": false, "component": "sections.footer", "required": true }
+  }
+}

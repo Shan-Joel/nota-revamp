@@ -1,0 +1,10 @@
+{
+  "collectionName": "components_sections_specs",
+  "info": { "displayName": "Specifications", "icon": "bulletList" },
+  "options": {},
+  "attributes": {
+    "title": { "type": "string", "required": true },
+    "subtitle": { "type": "string", "required": true },
+    "groups": { "type": "component", "repeatable": true, "component": "items.spec-group" }
+  }
+}

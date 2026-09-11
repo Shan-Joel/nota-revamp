@@ -1,0 +1,16 @@
+{
+  "collectionName": "components_sections_footers",
+  "info": {
+    "displayName": "Footer",
+    "icon": "layout",
+    "description": "Link list reuses the Navigation menu links."
+  },
+  "options": {},
+  "attributes": {
+    "linksTitle": { "type": "string", "required": true },
+    "backToTop": { "type": "component", "repeatable": false, "component": "shared.link", "required": true },
+    "copyright": { "type": "string", "required": true },
+    "logo": { "type": "string", "required": true },
+    "credit": { "type": "string", "required": true }
+  }
+}
