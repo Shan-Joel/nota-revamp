@@ -36,8 +36,7 @@ const { frames, captions } = Astro.props;
                 <h2 class="display text-4xl leading-tight sm:text-6xl">{cap.headline}</h2>
               ) : (
                 <h3 class="display text-4xl sm:text-6xl">
-                  {cap.headline}
-                  {cap.headlineItalic && <span class="italic">{cap.headlineItalic}</span>}
+                  {cap.headline} {cap.headlineItalic && <span class="italic">{cap.headlineItalic}</span>}
                 </h3>
               )}
               {cap.body && (
