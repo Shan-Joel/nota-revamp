@@ -86,14 +86,8 @@ export interface HomepageContent {
     image: { src: string; alt: string };
   };
   footer: {
-    headline: string;
-    paragraph: string;
-    form: {
-      label: string;
-      placeholder: string;
-      submitLabel: string;
-      successMessage: string;
-    };
+    linksTitle: string;
+    backToTop: NavLink;
     copyright: string;
     logo: string;
     credit: string;
@@ -282,14 +276,8 @@ const homepageContent: HomepageContent = {
     },
   },
   footer: {
-    headline: "Stay ahead",
-    paragraph: "Launching soon. Get early access and insider updates.",
-    form: {
-      label: "Email",
-      placeholder: "you@example.com",
-      submitLabel: "Notify me",
-      successMessage: "All set. We'll keep you posted.",
-    },
+    linksTitle: "Explore",
+    backToTop: { label: "Back to top", href: "#top" },
     copyright: "© 2026 Nōta Team",
     logo: "NŌTA",
     credit: "Designed by Alice & UPROCK Studio",

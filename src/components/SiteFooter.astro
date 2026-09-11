@@ -2,15 +2,6 @@
 import type { NavLink } from "@/content/homepage";
 
 interface Props {
-  eyebrow: string;
-  headline: string;
-  paragraph: string;
-  form: {
-    label: string;
-    placeholder: string;
-    submitLabel: string;
-    successMessage: string;
-  };
   links: NavLink[];
   linksTitle: string;
   backToTop: NavLink;
@@ -19,87 +10,14 @@ interface Props {
   credit: string;
 }
 
-const {
-  eyebrow,
-  headline,
-  paragraph,
-  form,
-  links,
-  linksTitle,
-  backToTop,
-  copyright,
-  logo,
-  credit,
-} = Astro.props;
+const { links, linksTitle, backToTop, copyright, logo, credit } = Astro.props;
 ---
 
 <footer id="stay-ahead" data-site-footer class="scroll-mt-20 overflow-hidden px-5 sm:px-8">
   <div class="mx-auto max-w-[1600px]">
-    <div class="grid gap-14 pt-24 pb-20 sm:pt-32 lg:grid-cols-12 lg:gap-8 lg:pb-28">
-      <div class="lg:col-span-6">
-        <p class="eyebrow mb-8">{eyebrow}</p>
-        <h2 class="display overflow-hidden text-6xl sm:text-8xl xl:text-9xl" data-footer-title>
-          {headline}
-        </h2>
-      </div>
-
-      <div class="flex flex-col justify-end gap-10 lg:col-span-5 lg:col-start-8">
-        <p class="text-muted-foreground max-w-sm text-[15px] leading-relaxed">{paragraph}</p>
-
-        <form data-footer-form class="flex flex-col gap-4">
-          <label for="email" class="eyebrow">{form.label}</label>
-          <div
-            class="border-border focus-within:border-foreground/50 flex items-center gap-4 border-b pb-3 transition-colors duration-500"
-          >
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              autocomplete="email"
-              placeholder={form.placeholder}
-              class="display placeholder:text-muted-foreground/40 w-full min-w-0 bg-transparent text-3xl outline-none sm:text-4xl"
-            />
-            <button
-              type="submit"
-              aria-label={form.submitLabel}
-              class="group/btn flex shrink-0 items-center gap-3 text-[13px] font-medium"
-            >
-              <span
-                class="text-muted-foreground group-hover/btn:text-foreground hidden transition-colors duration-300 sm:inline"
-              >
-                {form.submitLabel}
-              </span>
-              <span
-                class="bg-foreground text-background group-hover/btn:bg-primary group-hover/btn:text-primary-foreground flex size-12 items-center justify-center rounded-full transition-colors duration-300"
-              >
-                <svg
-                  class="size-4 transition-transform duration-300 group-hover/btn:translate-x-0.5"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M3 8h10M9 4l4 4-4 4"></path>
-                </svg>
-              </span>
-            </button>
-          </div>
-          <p
-            data-footer-status
-            class="text-primary text-[13px] opacity-0 transition-opacity duration-500"
-            role="status"
-          >
-            {form.successMessage}
-          </p>
-        </form>
-      </div>
-    </div>
-
-    <div class="hairline flex flex-col gap-10 py-10 sm:flex-row sm:items-end sm:justify-between">
+    <div
+      class="flex flex-col gap-10 pt-16 pb-10 sm:flex-row sm:items-end sm:justify-between sm:pt-20"
+    >
       <nav aria-label={linksTitle}>
         <p class="eyebrow mb-5">{linksTitle}</p>
         <ul class="flex flex-wrap gap-x-8 gap-y-3">
@@ -143,7 +61,10 @@ const {
     </div>
 
     <div class="@container" aria-hidden="true">
-      <p class="display footer-wordmark text-foreground text-center text-[30cqi]" data-footer-wordmark>
+      <p
+        class="display footer-wordmark text-foreground text-center text-[42cqi] whitespace-nowrap"
+        data-footer-wordmark
+      >
         {logo}
       </p>
     </div>
@@ -174,38 +95,14 @@ const {
 
   initGsap(root, ({ gsap, root, reduced }) => {
     if (reduced) return;
-
-    const title = root.querySelector<HTMLElement>("[data-footer-title]");
-    if (title) {
-      gsap.from(splitChars(title), {
-        yPercent: 110,
-        duration: 0.9,
-        ease: "power3.out",
-        stagger: 0.02,
-        scrollTrigger: { trigger: root, start: "top 80%", once: true },
-      });
-    }
-
     const wordmark = root.querySelector<HTMLElement>("[data-footer-wordmark]");
-    if (wordmark) {
-      gsap.from(splitChars(wordmark), {
-        yPercent: 100,
-        duration: 1.4,
-        ease: "power4.out",
-        stagger: 0.08,
-        scrollTrigger: { trigger: wordmark, start: "top 92%", once: true },
-      });
-    }
-  });
-
-  const form = document.querySelector<HTMLFormElement>("[data-footer-form]");
-  const status = document.querySelector<HTMLElement>("[data-footer-status]");
-  const emailInput = form?.querySelector<HTMLInputElement>("#email");
-
-  form?.addEventListener("submit", (e) => {
-    e.preventDefault();
-    if (emailInput?.value.trim()) {
-      status?.classList.replace("opacity-0", "opacity-100");
-    }
+    if (!wordmark) return;
+    gsap.from(splitChars(wordmark, { clipTop: false }), {
+      yPercent: 100,
+      duration: 1.4,
+      ease: "power4.out",
+      stagger: 0.08,
+      scrollTrigger: { trigger: wordmark, start: "top 92%", once: true },
+    });
   });
 </script>

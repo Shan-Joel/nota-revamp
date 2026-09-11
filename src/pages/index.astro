@@ -69,13 +69,6 @@ const content = await getHomepageContent();
         image={content.order.image}
       />
     </main>
-    <SiteFooter
-      headline={content.footer.headline}
-      paragraph={content.footer.paragraph}
-      form={content.footer.form}
-      copyright={content.footer.copyright}
-      logo={content.footer.logo}
-      credit={content.footer.credit}
-    />
+    <SiteFooter {...content.footer} links={content.nav.links} />
   </div>
 </Layout>

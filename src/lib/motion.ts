@@ -8,40 +8,52 @@ export type MotionCtx = {
   reduced: boolean;
 };
 
-let registered = false;
+type Setup = (ctx: MotionCtx) => void;
 
-/**
- * Runs a GSAP setup function scoped to `root`. Astro pages are full
- * document loads (no component unmount to clean up after), so unlike the
- * original React `useGsap` hook this never needs `gsap.context()`/revert —
- * it just imports GSAP, registers ScrollTrigger once, and runs `setup`.
- */
-export async function initGsap(
-  root: HTMLElement | null,
-  setup: (ctx: MotionCtx) => void,
-) {
+const pending: { root: HTMLElement; setup: Setup }[] = [];
+let flushing: Promise<void> | undefined;
+
+export function initGsap(root: HTMLElement | null, setup: Setup) {
   if (!root) return;
+  pending.push({ root, setup });
+  flushing ??= flush();
+}
 
+// ScrollTrigger computes pin spacing in creation order, so sections must be set up top-to-bottom.
+async function flush() {
   const [{ gsap }, { ScrollTrigger }] = await Promise.all([
     import("gsap"),
     import("gsap/ScrollTrigger"),
+    domReady(),
   ]);
-
-  if (!registered) {
-    gsap.registerPlugin(ScrollTrigger);
-    registered = true;
-  }
-
+  gsap.registerPlugin(ScrollTrigger);
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  setup({ gsap, ScrollTrigger, root, reduced });
+
+  const batch = pending
+    .splice(0)
+    .sort((a, b) =>
+      a.root.compareDocumentPosition(b.root) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1,
+    );
+  for (const { root, setup } of batch) setup({ gsap, ScrollTrigger, root, reduced });
+
+  ScrollTrigger.refresh();
+  flushing = undefined;
+}
+
+function domReady() {
+  return document.readyState === "loading"
+    ? new Promise<void>((resolve) =>
+        document.addEventListener("DOMContentLoaded", () => resolve(), { once: true }),
+      )
+    : Promise.resolve();
 }
 
 /** Wraps every character of an element's text in spans, ready to stagger. */
-export function splitChars(el: HTMLElement): HTMLElement[] {
+export function splitChars(el: HTMLElement, { clipTop = true } = {}): HTMLElement[] {
   if (el.dataset["split"] === "done") {
     return Array.from(el.querySelectorAll<HTMLElement>("[data-char]"));
   }
-  const source = el.textContent ?? "";
+  const source = (el.textContent ?? "").trim();
   el.textContent = "";
   const out: HTMLElement[] = [];
 
@@ -56,7 +68,9 @@ export function splitChars(el: HTMLElement): HTMLElement[] {
     for (const ch of chunk) {
       const outer = document.createElement("span");
       outer.style.display = "inline-block";
-      outer.style.overflow = "hidden";
+      // Clipping only the bottom keeps diacritics above the line box (the Ō macron) visible.
+      if (clipTop) outer.style.overflow = "hidden";
+      else outer.style.clipPath = "inset(-1em -1em 0 -1em)";
       outer.style.verticalAlign = "top";
       const inner = document.createElement("span");
       inner.setAttribute("data-char", "");
@@ -78,7 +92,7 @@ export function splitWords(el: HTMLElement): HTMLElement[] {
   if (el.dataset["split"] === "done") {
     return Array.from(el.querySelectorAll<HTMLElement>("[data-word]"));
   }
-  const source = el.textContent ?? "";
+  const source = (el.textContent ?? "").trim();
   el.textContent = "";
   const out: HTMLElement[] = [];
 
