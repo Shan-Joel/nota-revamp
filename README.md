@@ -29,10 +29,12 @@ production builds read it from `.env.production`.
 
 ## How content flows
 
-- `src/lib/strapi.ts` fetches the published **Homepage** single type through Strapi's public,
-  read-only API and maps it into the `HomepageContent` shape.
-- `src/content/homepage.ts` defines that shape. `getHomepageContent()` is the only entry point
-  pages use; components receive their slice of it as props.
+- `src/lib/strapi.ts` fetches the published **Homepage** and **404 page** single types through
+  Strapi's public, read-only API and maps them into the `HomepageContent` and `NotFoundContent`
+  shapes.
+- `src/content/homepage.ts` and `src/content/not-found.ts` define those shapes.
+  `getHomepageContent()` and `getNotFoundContent()` are the only entry points pages use;
+  components receive their slice as props.
 - The site builds to static files, so it only shows newly published content after a rebuild.
 - Media: local dev stores uploads in `cms/public/uploads`; production stores them on Cloudinary.
 
@@ -48,7 +50,7 @@ pen render (`PenFrame.astro`). Replacing the hero image with a different shot br
 | Media | Cloudinary, folder `nota` | Production-only upload provider (`cms/config/env/production`) |
 | Site | Vercel, repo root | Static build; reads `STRAPI_URL` from `.env.production` |
 
-Publishing or unpublishing the Homepage in Strapi calls the Vercel deploy hook stored in Railway's
+Publishing or unpublishing the Homepage or the 404 page in Strapi calls the Vercel deploy hook stored in Railway's
 `VERCEL_DEPLOY_HOOK_URL`, which rebuilds the live site (`cms/src/index.ts`).
 
 Railway variables for the Strapi service: `NODE_ENV`, `DATABASE_CLIENT`, `DATABASE_URL`,

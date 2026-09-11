@@ -6,9 +6,10 @@ interface Props {
   description: string;
   themeColor: string;
   ogImage: string;
+  noindex?: boolean;
 }
 
-const { title, description, themeColor, ogImage } = Astro.props;
+const { title, description, themeColor, ogImage, noindex = false } = Astro.props;
 ---
 
 <html lang="en">
@@ -17,6 +18,7 @@ const { title, description, themeColor, ogImage } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex" />}
     <meta name="theme-color" content={themeColor} />
 
     <meta property="og:type" content="website" />

@@ -1,30 +1,40 @@
 ---
 import Layout from "@/layouts/Layout.astro";
+import SiteHeader from "@/components/SiteHeader.astro";
+import NotFound from "@/components/NotFound.astro";
 import { getHomepageContent } from "@/content/homepage";
+import { getNotFoundContent } from "@/content/not-found";
 
-const content = await getHomepageContent();
+const [home, notFound] = await Promise.all([getHomepageContent(), getNotFoundContent()]);
+const { seoTitle, ...notFoundProps } = notFound;
+
+// Section anchors live on the homepage, so links from here must point there.
+const toHome = (href: string) => (href.startsWith("#") ? `/${href}` : href);
 ---
 
 <Layout
-  title="Page not found — NŌTA"
-  description={content.seo.description}
-  themeColor={content.seo.themeColor}
-  ogImage={content.seo.ogImage}
+  title={seoTitle}
+  description={home.seo.description}
+  themeColor={home.seo.themeColor}
+  ogImage={home.seo.ogImage}
+  noindex
 >
-  <div class="bg-background flex min-h-screen items-center justify-center px-4">
-    <div class="max-w-md text-center">
-      <h1 class="text-foreground text-7xl font-bold">404</h1>
-      <h2 class="text-foreground mt-4 text-xl font-semibold">Page not found</h2>
-      <p class="text-muted-foreground mt-2 text-sm">
-        The page you're looking for doesn't exist or has been moved.
-      </p>
-      <div class="mt-6">
-        <a
-          href="/"
-          class="bg-primary text-primary-foreground inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-primary/90"
-        >
-          Go home
-        </a>
+  <div class="grain bg-background flex min-h-screen flex-col">
+    <SiteHeader
+      logo={home.nav.logo}
+      logoHref="/"
+      links={home.nav.links.map((l) => ({ ...l, href: toHome(l.href) }))}
+      cta={{ ...home.nav.cta, href: toHome(home.nav.cta.href) }}
+    />
+    <main class="flex flex-1 flex-col">
+      <NotFound {...notFoundProps} />
+    </main>
+    <div class="relative mx-auto w-full max-w-[1600px] px-5 sm:px-8">
+      <div
+        class="hairline text-muted-foreground flex flex-col gap-2 py-6 text-[12px] sm:flex-row sm:items-center sm:justify-between"
+      >
+        <span>{home.footer.copyright}</span>
+        <span>{home.footer.credit}</span>
       </div>
     </div>
   </div>

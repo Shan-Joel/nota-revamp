@@ -1,5 +1,7 @@
 import type { Core } from '@strapi/strapi';
-import { seedHomepage } from './seed';
+import { seedContent } from './seed';
+
+const SITE_CONTENT = new Set(['api::homepage.homepage', 'api::not-found-page.not-found-page']);
 
 // The site is static: it only shows newly published content after Vercel rebuilds it.
 async function triggerSiteRebuild(strapi: Core.Strapi) {
@@ -18,7 +20,7 @@ export default {
     strapi.documents.use(async (context, next) => {
       const result = await next();
       if (
-        context.uid === 'api::homepage.homepage' &&
+        SITE_CONTENT.has(context.uid) &&
         (context.action === 'publish' || context.action === 'unpublish')
       ) {
         void triggerSiteRebuild(strapi);
@@ -28,6 +30,7 @@ export default {
   },
 
   async bootstrap({ strapi }: { strapi: Core.Strapi }) {
-    await seedHomepage(strapi);
+    // Content seeded on a fresh deploy isn't on the live site until it rebuilds.
+    if (await seedContent(strapi)) void triggerSiteRebuild(strapi);
   },
 };

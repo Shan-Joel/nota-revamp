@@ -3,11 +3,12 @@ import type { NavLink } from "@/content/homepage";
 
 interface Props {
   logo: string;
+  logoHref?: string;
   links: NavLink[];
   cta: { label: string; price: string; href: string };
 }
 
-const { logo, links, cta } = Astro.props;
+const { logo, logoHref = "#top", links, cta } = Astro.props;
 ---
 
 <header
@@ -15,7 +16,7 @@ const { logo, links, cta } = Astro.props;
   class="fixed inset-x-0 top-0 z-50 bg-transparent transition-colors duration-500"
 >
   <div class="mx-auto flex h-16 max-w-[1600px] items-center justify-between gap-6 px-5 sm:px-8">
-    <a href="#top" class="display text-xl tracking-[0.18em] sm:text-2xl">
+    <a href={logoHref} class="display text-xl tracking-[0.18em] sm:text-2xl">
       {logo}
     </a>
 

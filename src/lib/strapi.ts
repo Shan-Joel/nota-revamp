@@ -1,5 +1,6 @@
 import { STRAPI_URL } from "astro:env/server";
 import type { HomepageContent, NavLink } from "@/content/homepage";
+import type { NotFoundContent } from "@/content/not-found";
 
 interface Media {
   url: string;
@@ -84,6 +85,18 @@ interface StrapiHomepage {
   };
 }
 
+// Shape of GET /api/not-found-page with its two link components populated.
+interface StrapiNotFoundPage {
+  seoTitle: string;
+  code: string;
+  eyebrow: string;
+  headline: string;
+  headlineItalic: string;
+  body: string;
+  primaryCta: NavLink;
+  secondaryCta: NavLink;
+}
+
 const POPULATE: Record<string, string> = {
   "populate[seo][populate]": "*",
   "populate[nav][populate]": "*",
@@ -99,18 +112,26 @@ const POPULATE: Record<string, string> = {
   "populate[footer][populate]": "*",
 };
 
-export async function fetchHomepage(): Promise<StrapiHomepage> {
-  const url = new URL("/api/homepage", STRAPI_URL);
-  for (const [key, value] of Object.entries(POPULATE)) url.searchParams.set(key, value);
+async function fetchSingleType<T>(path: string, populate: Record<string, string>): Promise<T> {
+  const url = new URL(path, STRAPI_URL);
+  for (const [key, value] of Object.entries(populate)) url.searchParams.set(key, value);
 
   const res = await fetch(url);
   if (!res.ok) {
-    throw new Error(`Strapi request failed: ${res.status} ${res.statusText} (${url.origin})`);
+    throw new Error(`Strapi request failed: ${res.status} ${res.statusText} (${url.origin}${path})`);
   }
-  const json = (await res.json()) as { data: StrapiHomepage | null };
-  if (!json.data) throw new Error("Strapi has no published Homepage entry.");
+  const json = (await res.json()) as { data: T | null };
+  if (!json.data) throw new Error(`Strapi has no published entry at ${path}.`);
   return json.data;
 }
+
+export const fetchHomepage = () => fetchSingleType<StrapiHomepage>("/api/homepage", POPULATE);
+
+export const fetchNotFoundPage = () =>
+  fetchSingleType<StrapiNotFoundPage>("/api/not-found-page", {
+    "populate[primaryCta]": "true",
+    "populate[secondaryCta]": "true",
+  });
 
 // Local uploads come back as "/uploads/..." paths; cloud providers return absolute URLs.
 const mediaUrl = (media: Media) => new URL(media.url, STRAPI_URL).toString();
@@ -210,5 +231,18 @@ export function toHomepageContent(s: StrapiHomepage): HomepageContent {
       logo: s.footer.logo,
       credit: s.footer.credit,
     },
+  };
+}
+
+export function toNotFoundContent(s: StrapiNotFoundPage): NotFoundContent {
+  return {
+    seoTitle: s.seoTitle,
+    code: s.code,
+    eyebrow: s.eyebrow,
+    headline: s.headline,
+    headlineItalic: s.headlineItalic,
+    body: s.body,
+    primaryCta: link(s.primaryCta),
+    secondaryCta: link(s.secondaryCta),
   };
 }

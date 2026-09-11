@@ -223,19 +223,31 @@ async function upload(strapi: Core.Strapi, [fileName, alternativeText]: readonly
   return (Array.isArray(result) ? result[0] : result).id as number;
 }
 
-async function allowPublicRead(strapi: Core.Strapi) {
+async function allowPublicRead(strapi: Core.Strapi, action: string) {
   const role = await strapi.db
     .query('plugin::users-permissions.role')
     .findOne({ where: { type: 'public' } });
   const permissions = strapi.db.query('plugin::users-permissions.permission');
-  const action = 'api::homepage.homepage.find';
   if (!(await permissions.findOne({ where: { action, role: role.id } }))) {
     await permissions.create({ data: { action, role: role.id } });
   }
 }
 
-// On an empty database (a fresh deploy), uploads the site's media and publishes the Homepage.
-export async function seedHomepage(strapi: Core.Strapi) {
+const notFoundContent = {
+  seoTitle: 'Page not found — NŌTA',
+  code: '404',
+  eyebrow: 'Error 404 — Page not found',
+  headline: 'This page was',
+  headlineItalic: 'never written.',
+  body: 'The link may be broken, or the page has moved. Everything else is right where you left it.',
+  primaryCta: link('Back to home', '/'),
+  secondaryCta: link('See specifications', '/#specifications'),
+};
+
+// Creates whatever site content is missing (e.g. on a fresh deploy); returns true if it created any.
+export async function seedContent(strapi: Core.Strapi): Promise<boolean> {
+  let created = false;
+
   const homepage = strapi.documents('api::homepage.homepage');
   if (!(await homepage.findFirst())) {
     const ids = {} as MediaIds;
@@ -244,6 +256,17 @@ export async function seedHomepage(strapi: Core.Strapi) {
     }
     await homepage.create({ data: content(ids) as any, status: 'published' });
     strapi.log.info('[seed] Uploaded media and published the Homepage.');
+    created = true;
   }
-  await allowPublicRead(strapi);
+
+  const notFound = strapi.documents('api::not-found-page.not-found-page');
+  if (!(await notFound.findFirst())) {
+    await notFound.create({ data: notFoundContent as any, status: 'published' });
+    strapi.log.info('[seed] Published the 404 page.');
+    created = true;
+  }
+
+  await allowPublicRead(strapi, 'api::homepage.homepage.find');
+  await allowPublicRead(strapi, 'api::not-found-page.not-found-page.find');
+  return created;
 }
