@@ -72,6 +72,7 @@ export interface HomepageContent {
     details: { label: string; note: string }[];
     grid: {
       heading: string;
+      headingItalic: string;
       paragraph: string;
       items: { title: string; desc: string }[];
       video: { src: string; poster: string };
@@ -242,7 +243,8 @@ const homepageContent: HomepageContent = {
       { label: "Aluminum body", note: "USB-C charging, Bluetooth, 8h of active use." },
     ],
     grid: {
-      heading: "A complete, ready-to-use set",
+      heading: "A complete, ",
+      headingItalic: "ready-to-use set",
       paragraph:
         "Smart pen, smart-paper notepad, charging cable, and instructions — carefully packaged for a hassle-free start.",
       items: [

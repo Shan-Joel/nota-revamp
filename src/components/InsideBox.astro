@@ -8,6 +8,7 @@ interface Props {
   details: { label: string; note: string }[];
   grid: {
     heading: string;
+    headingItalic: string;
     paragraph: string;
     items: { title: string; desc: string }[];
     video: { src: string; poster: string };
@@ -51,37 +52,61 @@ const { frames, headline, headlineItalic, details, grid } = Astro.props;
     </div>
   </div>
 
-  <div class="mx-auto max-w-[1600px] px-5 py-24 sm:px-8 sm:py-32">
-    <div class="hairline grid gap-10 pt-6 lg:grid-cols-2" data-box-grid>
-      <div class="flex flex-col gap-6">
-        <h3 class="display text-3xl sm:text-5xl" data-box-item>{grid.heading}</h3>
-        <p class="text-muted-foreground max-w-md text-[15px] leading-relaxed" data-box-item>
-          {grid.paragraph}
-        </p>
-        <dl class="mt-4 flex flex-col" data-box-item>
-          {
-            grid.items.map((item) => (
-              <div class="hairline py-4">
-                <dt class="text-[15px]">{item.title}</dt>
-                <dd class="text-muted-foreground text-[13px]">{item.desc}</dd>
-              </div>
-            ))
-          }
-        </dl>
-      </div>
+  <div class="mx-auto max-w-[1600px] px-5 py-24 sm:px-8 sm:py-32" data-box-grid>
+    <div class="grid gap-8 lg:grid-cols-12 lg:items-end">
+      <h3 class="display text-4xl sm:text-6xl lg:col-span-7 lg:text-7xl" data-box-item>
+        {grid.heading}<span class="italic">{grid.headingItalic}</span>
+      </h3>
+      <p
+        class="text-muted-foreground max-w-md text-[15px] leading-relaxed lg:col-span-4 lg:col-start-9"
+        data-box-item
+      >
+        {grid.paragraph}
+      </p>
+    </div>
 
-      <figure class="relative aspect-[4/3] overflow-hidden" data-box-item>
+    <div class="mt-14 grid gap-px sm:mt-20 lg:grid-cols-12">
+      <figure
+        class="bg-surface relative aspect-[4/3] overflow-hidden lg:col-span-7 lg:aspect-auto lg:min-h-[36rem]"
+        data-box-item
+      >
         <video
           data-box-video
           src={grid.video.src}
           poster={grid.video.poster}
-          class="h-full w-full object-cover"
+          class="absolute inset-0 h-full w-full object-cover"
           muted
           loop
           playsinline
           preload="metadata"
         />
+        <div class="from-background/60 absolute inset-0 bg-gradient-to-t via-transparent to-transparent">
+        </div>
       </figure>
+
+      <ol class="grid auto-rows-fr gap-px lg:col-span-5" data-box-rows>
+        {
+          grid.items.map((item, i) => (
+            <li
+              data-box-row
+              class="bg-surface/60 hover:bg-surface flex gap-6 p-8 transition-colors duration-500 sm:p-10"
+            >
+              <span
+                class="text-primary pt-2 text-[11px] tracking-[0.22em] tabular-nums"
+                aria-hidden="true"
+              >
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <div>
+                <p class="display text-2xl sm:text-3xl">{item.title}</p>
+                <p class="text-muted-foreground mt-2 max-w-sm text-[14px] leading-relaxed">
+                  {item.desc}
+                </p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
     </div>
   </div>
 </section>
@@ -146,5 +171,29 @@ const { frames, headline, headlineItalic, details, grid } = Astro.props;
       stagger: 0.1,
       scrollTrigger: { trigger: root.querySelector("[data-box-grid]"), start: "top 80%", once: true },
     });
+    gsap.from(root.querySelectorAll("[data-box-row]"), {
+      opacity: 0,
+      y: 28,
+      duration: 0.9,
+      ease: "power3.out",
+      stagger: 0.1,
+      scrollTrigger: { trigger: root.querySelector("[data-box-rows]"), start: "top 80%", once: true },
+    });
+    if (video) {
+      gsap.fromTo(
+        video,
+        { scale: 1.12 },
+        {
+          scale: 1,
+          ease: "none",
+          scrollTrigger: {
+            trigger: video.parentElement,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: true,
+          },
+        },
+      );
+    }
   });
 </script>
