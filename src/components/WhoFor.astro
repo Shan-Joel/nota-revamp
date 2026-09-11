@@ -1,0 +1,88 @@
+---
+interface Props {
+  video: { src: string };
+  headlinePrefix: string;
+  headlineItalic: string;
+  paragraphs: [string, string];
+  audiences: { n: string; title: string; body: string }[];
+}
+
+const { video, headlinePrefix, headlineItalic, paragraphs, audiences } = Astro.props;
+---
+
+<section id="who" data-who-for class="scroll-mt-20 py-10">
+  <div class="mx-auto max-w-[1600px] px-5 sm:px-8">
+    <div class="relative aspect-[16/10] w-full overflow-hidden sm:aspect-[21/9]">
+      <video
+        data-who-video
+        src={video.src}
+        class="h-full w-full scale-105 object-cover"
+        muted
+        loop
+        playsinline
+        preload="metadata"
+      />
+      <div class="from-background/90 absolute inset-0 bg-gradient-to-t via-transparent to-transparent">
+      </div>
+      <h2 class="display absolute bottom-6 left-6 max-w-3xl text-3xl sm:bottom-10 sm:left-10 sm:text-6xl">
+        {headlinePrefix} <span class="italic">{headlineItalic}</span>
+      </h2>
+    </div>
+
+    <div class="mt-16 grid gap-10 md:grid-cols-2">
+      <p class="text-foreground/85 text-lg leading-relaxed sm:text-xl">{paragraphs[0]}</p>
+      <p class="text-muted-foreground text-[15px] leading-relaxed">{paragraphs[1]}</p>
+    </div>
+
+    <div class="mt-20 grid gap-px md:grid-cols-3">
+      {
+        audiences.map((a) => (
+          <article
+            data-audience
+            class="bg-surface/60 hover:bg-surface flex flex-col gap-5 p-8 transition-colors duration-500 sm:p-10"
+          >
+            <span class="text-primary text-[11px] tracking-[0.22em]">{a.n}</span>
+            <h3 class="display text-2xl sm:text-3xl">{a.title}</h3>
+            <p class="text-muted-foreground text-[14px] leading-relaxed">{a.body}</p>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<script>
+  import { initGsap } from "@/lib/motion";
+
+  const root = document.querySelector<HTMLElement>("[data-who-for]");
+
+  initGsap(root, ({ gsap, root, reduced }) => {
+    const video = root.querySelector<HTMLVideoElement>("[data-who-video]");
+    if (video) {
+      gsap.to(video, {
+        scale: 1.12,
+        ease: "none",
+        scrollTrigger: {
+          trigger: video.parentElement,
+          start: "top bottom",
+          end: "bottom top",
+          scrub: true,
+        },
+      });
+      video.muted = true;
+      void video.play().catch(() => {});
+    }
+
+    if (reduced) return;
+    root.querySelectorAll<HTMLElement>("[data-audience]").forEach((card, i) => {
+      gsap.from(card, {
+        opacity: 0,
+        y: 48,
+        duration: 1,
+        ease: "power3.out",
+        delay: i * 0.05,
+        scrollTrigger: { trigger: card, start: "top 85%", once: true },
+      });
+    });
+  });
+</script>

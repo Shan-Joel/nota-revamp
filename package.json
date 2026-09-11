@@ -1,0 +1,29 @@
+{
+  "name": "nota-astro",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "lint": "eslint .",
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "astro": "^5.16.9",
+    "gsap": "^3.15.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@eslint/js": "^9.32.0",
+    "@tailwindcss/vite": "^4.2.1",
+    "eslint": "^9.32.0",
+    "eslint-config-prettier": "^10.1.1",
+    "eslint-plugin-astro": "^1.3.1",
+    "prettier": "^3.7.3",
+    "prettier-plugin-astro": "^0.14.1",
+    "tailwindcss": "^4.2.1",
+    "typescript": "^5.8.3"
+  }
+}

@@ -1,0 +1,150 @@
+---
+import PenFrame from "@/components/PenFrame.astro";
+
+interface Props {
+  frames: { src: string; alt: string }[];
+  headline: string;
+  headlineItalic: string;
+  details: { label: string; note: string }[];
+  grid: {
+    heading: string;
+    paragraph: string;
+    items: { title: string; desc: string }[];
+    video: { src: string; poster: string };
+  };
+}
+
+const { frames, headline, headlineItalic, details, grid } = Astro.props;
+---
+
+<section id="inside" data-inside-box class="scroll-mt-20">
+  <div data-pen-scene class="relative">
+    <div
+      data-pen-pin
+      class="bg-background relative z-10 flex h-[100svh] items-center overflow-hidden"
+    >
+      {
+        frames.map((frame) => (
+          <div data-pen-frame class="absolute inset-0">
+            <PenFrame src={frame.src} alt={frame.alt} insetTop="5rem" insetBottom="2rem" />
+          </div>
+        ))
+      }
+      <div class="from-background/90 absolute inset-0 bg-gradient-to-r via-transparent to-transparent">
+      </div>
+
+      <div class="relative mx-auto w-full max-w-[1600px] px-5 sm:px-8">
+        <h2 class="display text-5xl sm:text-8xl">
+          {headline}<span class="italic">{headlineItalic}</span>
+        </h2>
+        <ul class="mt-10 flex flex-col gap-5">
+          {
+            details.map((d) => (
+              <li data-detail class="max-w-xs">
+                <p class="text-[15px]">{d.label}</p>
+                <p class="text-muted-foreground text-[13px]">{d.note}</p>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="mx-auto max-w-[1600px] px-5 py-24 sm:px-8 sm:py-32">
+    <div class="hairline grid gap-10 pt-6 lg:grid-cols-2" data-box-grid>
+      <div class="flex flex-col gap-6">
+        <h3 class="display text-3xl sm:text-5xl" data-box-item>{grid.heading}</h3>
+        <p class="text-muted-foreground max-w-md text-[15px] leading-relaxed" data-box-item>
+          {grid.paragraph}
+        </p>
+        <dl class="mt-4 flex flex-col" data-box-item>
+          {
+            grid.items.map((item) => (
+              <div class="hairline py-4">
+                <dt class="text-[15px]">{item.title}</dt>
+                <dd class="text-muted-foreground text-[13px]">{item.desc}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </div>
+
+      <figure class="relative aspect-[4/3] overflow-hidden" data-box-item>
+        <video
+          data-box-video
+          src={grid.video.src}
+          poster={grid.video.poster}
+          class="h-full w-full object-cover"
+          muted
+          loop
+          playsinline
+          preload="metadata"
+        />
+      </figure>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { initGsap } from "@/lib/motion";
+
+  const root = document.querySelector<HTMLElement>("[data-inside-box]");
+
+  initGsap(root, ({ gsap, root, reduced }) => {
+    const frames = Array.from(root.querySelectorAll<HTMLElement>("[data-pen-frame]"));
+    if (frames.length > 1) {
+      gsap.set(frames.slice(1), { opacity: 0 });
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: root.querySelector("[data-pen-scene]"),
+          start: "top top",
+          end: "+=250%",
+          pin: root.querySelector("[data-pen-pin]"),
+          scrub: 0.7,
+        },
+      });
+      frames.forEach((f, i) => {
+        if (i === 0) return;
+        tl.to(frames[i - 1]!, { opacity: 0, duration: 1 }, i - 1).to(
+          f,
+          { opacity: 1, duration: 1 },
+          i - 1,
+        );
+      });
+      root.querySelectorAll<HTMLElement>("[data-detail]").forEach((d, i) => {
+        gsap.fromTo(
+          d,
+          { opacity: 0, x: -20 },
+          {
+            opacity: 1,
+            x: 0,
+            duration: 0.6,
+            ease: "power2.out",
+            scrollTrigger: {
+              trigger: root.querySelector("[data-pen-scene]"),
+              start: `top+=${(i + 1) * 25}% top`,
+              toggleActions: "play none none reverse",
+            },
+          },
+        );
+      });
+    }
+
+    const video = root.querySelector<HTMLVideoElement>("[data-box-video]");
+    if (video) {
+      video.muted = true;
+      void video.play().catch(() => {});
+    }
+
+    if (reduced) return;
+    gsap.from(root.querySelectorAll("[data-box-item]"), {
+      opacity: 0,
+      y: 36,
+      duration: 0.9,
+      ease: "power3.out",
+      stagger: 0.1,
+      scrollTrigger: { trigger: root.querySelector("[data-box-grid]"), start: "top 80%", once: true },
+    });
+  });
+</script>

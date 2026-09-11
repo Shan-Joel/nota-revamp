@@ -1,0 +1,39 @@
+---
+---
+
+<div
+  id="preloader"
+  aria-hidden="true"
+  class="fixed inset-0 z-100 flex items-center justify-center opacity-100 transition-opacity duration-700"
+  style="background: radial-gradient(120% 100% at 50% 0%, oklch(0.42 0.004 60) 0%, oklch(0.24 0.003 60) 55%, oklch(0.17 0.003 60) 100%);"
+>
+  <span class="display text-foreground text-6xl tabular-nums sm:text-8xl">
+    <span id="preloader-value">0</span> <span class="align-super text-3xl sm:text-5xl">%</span>
+  </span>
+</div>
+
+<script>
+  const el = document.getElementById("preloader");
+  const valueEl = document.getElementById("preloader-value");
+  if (el && valueEl) {
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const duration = reduced ? 250 : 1500;
+    const start = performance.now();
+
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / duration);
+      // ease-out so the counter decelerates into 100
+      valueEl.textContent = String(Math.round((1 - Math.pow(1 - t, 3)) * 100));
+      if (t < 1) {
+        requestAnimationFrame(tick);
+      } else {
+        window.setTimeout(() => {
+          el.classList.replace("opacity-100", "opacity-0");
+          el.classList.add("pointer-events-none");
+        }, 220);
+      }
+    };
+
+    requestAnimationFrame(tick);
+  }
+</script>

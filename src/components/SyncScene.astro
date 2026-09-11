@@ -1,0 +1,96 @@
+---
+interface Props {
+  frames: { src: string; alt: string }[];
+  captions: { headline: string; headlineItalic?: string; body?: string }[];
+}
+
+const { frames, captions } = Astro.props;
+---
+
+<section data-sync-scene class="relative">
+  <div
+    data-pin
+    class="bg-background relative z-10 flex h-[100svh] w-full items-center justify-center overflow-hidden"
+  >
+    {
+      frames.map((frame, i) => (
+        <img
+          data-frame
+          src={frame.src}
+          alt={frame.alt}
+          aria-hidden={i > 0}
+          class="absolute inset-0 h-full w-full object-cover"
+          loading="lazy"
+        />
+      ))
+    }
+    <div class="from-background via-background/70 absolute inset-0 bg-gradient-to-r to-transparent">
+    </div>
+
+    <div class="relative z-10 mx-auto w-full max-w-[1600px] px-5 sm:px-8">
+      <div class="relative h-56 max-w-xl sm:h-48">
+        {
+          captions.map((cap, i) => (
+            <div data-caption class="absolute inset-0">
+              {i === 0 ? (
+                <h2 class="display text-4xl leading-tight sm:text-6xl">{cap.headline}</h2>
+              ) : (
+                <h3 class="display text-4xl sm:text-6xl">
+                  {cap.headline}
+                  {cap.headlineItalic && <span class="italic">{cap.headlineItalic}</span>}
+                </h3>
+              )}
+              {cap.body && (
+                <p class="text-muted-foreground mt-4 text-[15px] leading-relaxed">{cap.body}</p>
+              )}
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { initGsap } from "@/lib/motion";
+
+  const root = document.querySelector<HTMLElement>("[data-sync-scene]");
+
+  initGsap(root, ({ gsap, root, reduced }) => {
+    const frames = Array.from(root.querySelectorAll<HTMLElement>("[data-frame]"));
+    const captions = Array.from(root.querySelectorAll<HTMLElement>("[data-caption]"));
+    if (frames.length === 0) return;
+
+    if (reduced) {
+      gsap.set(frames[0]!, { opacity: 1 });
+      gsap.set(captions, { opacity: 1 });
+      return;
+    }
+
+    gsap.set(frames.slice(1), { opacity: 0 });
+    gsap.set(captions.slice(1), { opacity: 0, y: 24 });
+
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: root,
+        start: "top top",
+        end: "+=300%",
+        pin: root.querySelector("[data-pin]"),
+        scrub: 0.8,
+      },
+    });
+
+    frames.forEach((frame, i) => {
+      if (i === 0) return;
+      tl.to(frames[i - 1]!, { opacity: 0, duration: 1 }, i - 1).to(
+        frame,
+        { opacity: 1, duration: 1 },
+        i - 1,
+      );
+      const cap = captions[i];
+      const prevCap = captions[i - 1];
+      if (prevCap) tl.to(prevCap, { opacity: 0, y: -24, duration: 0.6 }, i - 1);
+      if (cap) tl.to(cap, { opacity: 1, y: 0, duration: 0.6 }, i - 0.6);
+    });
+  });
+</script>

@@ -1,0 +1,31 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { getHomepageContent } from "@/content/homepage";
+
+const content = await getHomepageContent();
+---
+
+<Layout
+  title="Page not found — NŌTA"
+  description={content.seo.description}
+  themeColor={content.seo.themeColor}
+  ogImage={content.seo.ogImage}
+>
+  <div class="bg-background flex min-h-screen items-center justify-center px-4">
+    <div class="max-w-md text-center">
+      <h1 class="text-foreground text-7xl font-bold">404</h1>
+      <h2 class="text-foreground mt-4 text-xl font-semibold">Page not found</h2>
+      <p class="text-muted-foreground mt-2 text-sm">
+        The page you're looking for doesn't exist or has been moved.
+      </p>
+      <div class="mt-6">
+        <a
+          href="/"
+          class="bg-primary text-primary-foreground inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-primary/90"
+        >
+          Go home
+        </a>
+      </div>
+    </div>
+  </div>
+</Layout>

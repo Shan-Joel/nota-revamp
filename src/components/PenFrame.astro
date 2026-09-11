@@ -1,0 +1,104 @@
+---
+interface Props {
+  src: string;
+  alt: string;
+  insetTop?: string;
+  insetBottom?: string;
+  loading?: "lazy" | "eager";
+  fetchpriority?: "high" | "low" | "auto";
+}
+
+const {
+  src,
+  alt,
+  insetTop = "0px",
+  insetBottom = "0px",
+  loading = "lazy",
+  fetchpriority = "auto",
+} = Astro.props;
+
+const vars = `--pen-src:url("${src}");--inset-top:${insetTop};--inset-bottom:${insetBottom};`;
+---
+
+<div class="pen-frame" style={vars}>
+  <div class="fill fill-top"></div>
+  <div class="fill fill-bottom"></div>
+  <div class="fill fill-left"></div>
+  <div class="fill fill-right"></div>
+  <img
+    src={src}
+    alt={alt}
+    aria-hidden={alt ? undefined : "true"}
+    loading={loading}
+    fetchpriority={fetchpriority}
+    class="pen-img"
+  />
+</div>
+
+<style>
+  /* Height-fit the image so the pen is never cropped; stretch its edge pixels to fill the rest. */
+  .pen-frame {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+
+  .fill {
+    position: absolute;
+    background-image: var(--pen-src);
+    background-repeat: no-repeat;
+  }
+
+  .fill-top,
+  .fill-bottom {
+    left: 0;
+    right: 0;
+    background-size: 100% 20000%;
+  }
+
+  .fill-top {
+    top: 0;
+    height: calc(var(--inset-top) + 2px);
+    background-position: 50% 0;
+  }
+
+  .fill-bottom {
+    bottom: 0;
+    height: calc(var(--inset-bottom) + 2px);
+    background-position: 50% 100%;
+  }
+
+  .fill-left,
+  .fill-right {
+    top: var(--inset-top);
+    bottom: var(--inset-bottom);
+    width: 50%;
+    background-size: 20000% 100%;
+  }
+
+  .fill-left {
+    left: 0;
+    background-position: 0 50%;
+  }
+
+  .fill-right {
+    right: 0;
+    background-position: 100% 50%;
+  }
+
+  .pen-img {
+    --feather-x: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+    --feather-y: linear-gradient(to bottom, transparent, #000 4%, #000 96%, transparent);
+    position: absolute;
+    top: var(--inset-top);
+    left: 50%;
+    height: calc(100% - var(--inset-top) - var(--inset-bottom));
+    width: auto;
+    max-width: none;
+    transform: translateX(-50%);
+    -webkit-mask-image: var(--feather-x), var(--feather-y);
+    -webkit-mask-composite: source-in;
+    mask-image: var(--feather-x), var(--feather-y);
+    mask-composite: intersect;
+  }
+</style>

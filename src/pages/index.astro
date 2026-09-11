@@ -1,0 +1,81 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Preloader from "@/components/Preloader.astro";
+import SiteHeader from "@/components/SiteHeader.astro";
+import Hero from "@/components/Hero.astro";
+import Specs from "@/components/Specs.astro";
+import Philosophy from "@/components/Philosophy.astro";
+import WhoFor from "@/components/WhoFor.astro";
+import SyncScene from "@/components/SyncScene.astro";
+import SmartPaper from "@/components/SmartPaper.astro";
+import InsideBox from "@/components/InsideBox.astro";
+import OrderSection from "@/components/OrderSection.astro";
+import SiteFooter from "@/components/SiteFooter.astro";
+import { getHomepageContent } from "@/content/homepage";
+
+const content = await getHomepageContent();
+---
+
+<Layout
+  title={content.seo.title}
+  description={content.seo.description}
+  themeColor={content.seo.themeColor}
+  ogImage={content.seo.ogImage}
+>
+  <div class="grain bg-background min-h-screen">
+    <Preloader />
+    <SiteHeader logo={content.nav.logo} links={content.nav.links} cta={content.nav.cta} />
+    <main>
+      <Hero
+        eyebrow={content.hero.eyebrow}
+        headlineLine1={content.hero.headlineLine1}
+        headlineLine2={content.hero.headlineLine2}
+        body={content.hero.body}
+        primaryCta={content.hero.primaryCta}
+        secondaryCta={content.hero.secondaryCta}
+        image={content.hero.image}
+      />
+      <Specs title={content.specs.title} subtitle={content.specs.subtitle} groups={content.specs.groups} />
+      <Philosophy quote={content.philosophy.quote} body={content.philosophy.body} />
+      <WhoFor
+        video={content.whoFor.video}
+        headlinePrefix={content.whoFor.headlinePrefix}
+        headlineItalic={content.whoFor.headlineItalic}
+        paragraphs={content.whoFor.paragraphs}
+        audiences={content.whoFor.audiences}
+      />
+      <SyncScene frames={content.syncScene.frames} captions={content.syncScene.captions} />
+      <SmartPaper
+        headline={content.smartPaper.headline}
+        headlineItalic={content.smartPaper.headlineItalic}
+        image1={content.smartPaper.image1}
+        panel1={content.smartPaper.panel1}
+        panel2={content.smartPaper.panel2}
+        image2={content.smartPaper.image2}
+      />
+      <InsideBox
+        frames={content.insideBox.frames}
+        headline={content.insideBox.headline}
+        headlineItalic={content.insideBox.headlineItalic}
+        details={content.insideBox.details}
+        grid={content.insideBox.grid}
+      />
+      <OrderSection
+        eyebrow={content.order.eyebrow}
+        headline={content.order.headline}
+        paragraph={content.order.paragraph}
+        price={content.order.price}
+        cta={content.order.cta}
+        image={content.order.image}
+      />
+    </main>
+    <SiteFooter
+      headline={content.footer.headline}
+      paragraph={content.footer.paragraph}
+      form={content.footer.form}
+      copyright={content.footer.copyright}
+      logo={content.footer.logo}
+      credit={content.footer.credit}
+    />
+  </div>
+</Layout>

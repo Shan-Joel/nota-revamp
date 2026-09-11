@@ -1,0 +1,106 @@
+---
+import PenFrame from "@/components/PenFrame.astro";
+
+interface Props {
+  eyebrow: string;
+  headlineLine1: string;
+  headlineLine2: string;
+  body: string;
+  primaryCta: { label: string; href: string };
+  secondaryCta: { label: string; href: string };
+  image: { src: string; alt: string };
+}
+
+const { eyebrow, headlineLine1, headlineLine2, body, primaryCta, secondaryCta, image } =
+  Astro.props;
+---
+
+<section
+  id="top"
+  data-hero
+  class="relative flex min-h-[100svh] flex-col justify-end overflow-hidden pb-10"
+>
+  <div class="absolute inset-0" data-hero-image>
+    <PenFrame
+      src={image.src}
+      alt={image.alt}
+      insetTop="5rem"
+      loading="eager"
+      fetchpriority="high"
+    />
+    <div class="from-background via-background/20 absolute inset-0 bg-gradient-to-t to-transparent">
+    </div>
+    <div class="from-background/80 absolute inset-0 bg-gradient-to-r to-transparent"></div>
+  </div>
+
+  <div class="relative mx-auto w-full max-w-[1600px] px-5 sm:px-8" data-hero-copy>
+    <p class="eyebrow mb-6" data-hero-meta>
+      {eyebrow}
+    </p>
+
+    <h1 class="display text-[15vw] leading-[0.86] sm:text-[11vw] lg:text-[8.5vw]">
+      <span class="block overflow-hidden" data-hero-line="1">{headlineLine1}</span>
+      <span class="block overflow-hidden italic" data-hero-line="2">{headlineLine2}</span>
+    </h1>
+
+    <div
+      class="hairline mt-10 flex flex-col gap-6 pt-6 sm:flex-row sm:items-end sm:justify-between"
+    >
+      <p class="text-muted-foreground max-w-md text-sm leading-relaxed" data-hero-meta>
+        {body}
+      </p>
+      <div class="flex items-center gap-4" data-hero-meta>
+        <a
+          href={primaryCta.href}
+          class="bg-foreground text-background rounded-full px-6 py-3 text-[13px] font-medium transition-transform duration-300 hover:scale-[1.03]"
+        >
+          {primaryCta.label}
+        </a>
+        <a
+          href={secondaryCta.href}
+          class="text-muted-foreground hover:text-foreground text-[13px] transition-colors"
+        >
+          {secondaryCta.label}
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { initGsap, splitChars } from "@/lib/motion";
+
+  const root = document.querySelector<HTMLElement>("[data-hero]");
+
+  initGsap(root, ({ gsap, root, reduced }) => {
+    const line1 = root.querySelector<HTMLElement>("[data-hero-line='1']");
+    const line2 = root.querySelector<HTMLElement>("[data-hero-line='2']");
+    const image = root.querySelector<HTMLElement>("[data-hero-image]");
+    const meta = root.querySelectorAll<HTMLElement>("[data-hero-meta]");
+    if (!line1 || !line2 || !image) return;
+
+    const chars = [...splitChars(line1), ...splitChars(line2)];
+
+    if (reduced) {
+      gsap.set([chars, image, meta], { opacity: 1, y: 0 });
+      return;
+    }
+
+    const tl = gsap.timeline({ delay: 1.9, defaults: { ease: "power3.out" } });
+    tl.from(chars, { yPercent: 115, duration: 1.1, stagger: 0.018 })
+      .from(image, { opacity: 0, scale: 1.08, duration: 1.6, ease: "power2.out" }, 0.15)
+      .from(meta, { opacity: 0, y: 18, duration: 0.9, stagger: 0.12 }, 0.8);
+
+    gsap.to(image, {
+      yPercent: 12,
+      ease: "none",
+      scrollTrigger: { trigger: root, start: "top top", end: "bottom top", scrub: true },
+    });
+    gsap.to(root.querySelector("[data-hero-copy]"), {
+      opacity: 0,
+      y: -40,
+      ease: "none",
+      scrollTrigger: { trigger: root, start: "40% top", end: "bottom top", scrub: true },
+    });
+  });
+</script>

@@ -1,0 +1,99 @@
+---
+interface Props {
+  headline: string;
+  headlineItalic: string;
+  image1: { src: string; alt: string };
+  panel1: { eyebrow: string; headline: string; paragraph: string };
+  panel2: { eyebrow: string; headline: string; paragraph: string };
+  image2: { src: string; alt: string };
+}
+
+const { headline, headlineItalic, image1, panel1, panel2, image2 } = Astro.props;
+---
+
+<section data-smart-paper class="mx-auto max-w-[1600px] px-5 py-24 sm:px-8 sm:py-32">
+  <div class="hairline pt-6" data-panel>
+    <h2 class="display max-w-3xl text-4xl sm:text-7xl" data-panel-item>
+      {headline}<span class="italic">{headlineItalic}</span>
+    </h2>
+  </div>
+
+  <div class="mt-14 grid gap-px lg:grid-cols-2">
+    <figure class="relative aspect-[3/4] overflow-hidden">
+      <img
+        data-parallax
+        src={image1.src}
+        alt={image1.alt}
+        class="h-full w-full object-cover"
+        loading="lazy"
+      />
+    </figure>
+
+    <div class="bg-surface/60 flex flex-col justify-center gap-6 p-8 sm:p-14" data-panel>
+      <span class="eyebrow" data-panel-item>{panel1.eyebrow}</span>
+      <h3 class="display text-3xl sm:text-5xl" data-panel-item>{panel1.headline}</h3>
+      <p class="text-muted-foreground max-w-md text-[15px] leading-relaxed" data-panel-item>
+        {panel1.paragraph}
+      </p>
+    </div>
+
+    <div
+      class="bg-surface/60 order-4 flex flex-col justify-center gap-6 p-8 sm:p-14 lg:order-3"
+      data-panel
+    >
+      <span class="eyebrow" data-panel-item>{panel2.eyebrow}</span>
+      <h3 class="display text-3xl sm:text-5xl" data-panel-item>{panel2.headline}</h3>
+      <p class="text-muted-foreground max-w-md text-[15px] leading-relaxed" data-panel-item>
+        {panel2.paragraph}
+      </p>
+    </div>
+
+    <figure class="relative order-3 aspect-[3/4] overflow-hidden lg:order-4">
+      <img
+        data-parallax
+        src={image2.src}
+        alt={image2.alt}
+        class="h-full w-full object-cover"
+        loading="lazy"
+      />
+    </figure>
+  </div>
+</section>
+
+<script>
+  import { initGsap } from "@/lib/motion";
+
+  const root = document.querySelector<HTMLElement>("[data-smart-paper]");
+
+  initGsap(root, ({ gsap, root, reduced }) => {
+    root.querySelectorAll<HTMLElement>("[data-parallax]").forEach((el) => {
+      gsap.fromTo(
+        el,
+        { yPercent: -8, scale: 1.12 },
+        {
+          yPercent: 8,
+          scale: 1.12,
+          ease: "none",
+          scrollTrigger: {
+            trigger: el.parentElement,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: true,
+          },
+        },
+      );
+    });
+
+    if (reduced) return;
+    root.querySelectorAll<HTMLElement>("[data-panel]").forEach((panel) => {
+      gsap.from(panel.querySelectorAll("[data-panel-item]"), {
+        opacity: 0,
+        y: 32,
+        duration: 0.9,
+        ease: "power3.out",
+        stagger: 0.1,
+        scrollTrigger: { trigger: panel, start: "top 80%", once: true },
+      });
+    });
+  });
+</script>

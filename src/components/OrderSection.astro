@@ -1,0 +1,75 @@
+---
+interface Props {
+  eyebrow: string;
+  headline: string;
+  paragraph: string;
+  price: string;
+  cta: { label: string; href: string };
+  image: { src: string; alt: string };
+}
+
+const { eyebrow, headline, paragraph, price, cta, image } = Astro.props;
+---
+
+<section id="order" data-order class="bg-surface/40 relative scroll-mt-20 overflow-hidden">
+  <div
+    class="mx-auto grid max-w-[1600px] items-center gap-12 px-5 py-24 sm:px-8 sm:py-32 lg:grid-cols-2"
+  >
+    <div class="flex flex-col gap-8">
+      <span class="eyebrow" data-order-item>{eyebrow}</span>
+      <h2 class="display text-5xl sm:text-7xl" data-order-item>{headline}</h2>
+      <p class="text-muted-foreground max-w-md text-[15px] leading-relaxed" data-order-item>
+        {paragraph}
+      </p>
+      <div class="flex items-center gap-6" data-order-item>
+        <span class="display text-4xl">{price}</span>
+        <a
+          href={cta.href}
+          class="bg-primary text-primary-foreground rounded-full px-7 py-3 text-[13px] font-medium transition-transform duration-300 hover:scale-[1.03]"
+        >
+          {cta.label}
+        </a>
+      </div>
+    </div>
+
+    <figure class="relative aspect-[4/3] overflow-hidden" data-order-item>
+      <img
+        data-order-image
+        src={image.src}
+        alt={image.alt}
+        class="h-full w-full object-contain p-4"
+        loading="lazy"
+      />
+    </figure>
+  </div>
+</section>
+
+<script>
+  import { initGsap } from "@/lib/motion";
+
+  const root = document.querySelector<HTMLElement>("[data-order]");
+
+  initGsap(root, ({ gsap, root, reduced }) => {
+    const img = root.querySelector<HTMLElement>("[data-order-image]");
+    if (img) {
+      gsap.fromTo(
+        img,
+        { yPercent: -4 },
+        {
+          yPercent: 4,
+          ease: "none",
+          scrollTrigger: { trigger: root, start: "top bottom", end: "bottom top", scrub: true },
+        },
+      );
+    }
+    if (reduced) return;
+    gsap.from(root.querySelectorAll("[data-order-item]"), {
+      opacity: 0,
+      y: 30,
+      duration: 0.9,
+      ease: "power3.out",
+      stagger: 0.08,
+      scrollTrigger: { trigger: root, start: "top 75%", once: true },
+    });
+  });
+</script>

@@ -1,0 +1,59 @@
+---
+interface Props {
+  title: string;
+  subtitle: string;
+  groups: { title: string; items: string[] }[];
+}
+
+const { title, subtitle, groups } = Astro.props;
+---
+
+<section
+  id="specifications"
+  data-specs
+  class="mx-auto max-w-[1600px] scroll-mt-20 px-5 py-24 sm:px-8 sm:py-32"
+>
+  <div class="hairline flex flex-col gap-2 pt-6 sm:flex-row sm:items-baseline sm:justify-between">
+    <h2 class="display text-4xl sm:text-6xl">{title}</h2>
+    <p class="text-muted-foreground text-sm">{subtitle}</p>
+  </div>
+
+  <div class="mt-14 grid gap-12 md:grid-cols-3 md:gap-8">
+    {
+      groups.map((g) => (
+        <div data-spec-group>
+          <h3 class="eyebrow mb-6" data-spec-row>
+            {g.title}
+          </h3>
+          <ul>
+            {g.items.map((item) => (
+              <li data-spec-row class="hairline text-foreground/85 py-4 text-[15px] leading-snug">
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))
+    }
+  </div>
+</section>
+
+<script>
+  import { initGsap } from "@/lib/motion";
+
+  const root = document.querySelector<HTMLElement>("[data-specs]");
+
+  initGsap(root, ({ gsap, root, reduced }) => {
+    if (reduced) return;
+    root.querySelectorAll<HTMLElement>("[data-spec-group]").forEach((group) => {
+      gsap.from(group.querySelectorAll("[data-spec-row]"), {
+        opacity: 0,
+        y: 22,
+        duration: 0.8,
+        ease: "power3.out",
+        stagger: 0.08,
+        scrollTrigger: { trigger: group, start: "top 82%", once: true },
+      });
+    });
+  });
+</script>
