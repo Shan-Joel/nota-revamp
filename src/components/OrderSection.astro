@@ -11,65 +11,122 @@ interface Props {
 const { eyebrow, headline, paragraph, price, cta, image } = Astro.props;
 ---
 
-<section id="order" data-order class="bg-surface/40 relative scroll-mt-20 overflow-hidden">
+<section id="order" data-order class="relative scroll-mt-20 overflow-hidden">
   <div
-    class="mx-auto grid max-w-[1600px] items-center gap-12 px-5 py-24 sm:px-8 sm:py-32 lg:grid-cols-2"
+    class="order-glow pointer-events-none absolute inset-x-0 top-[35%] mx-auto h-[65%] w-[min(90rem,120vw)]"
+    aria-hidden="true"
   >
-    <div class="flex flex-col gap-8">
-      <span class="eyebrow" data-order-item>{eyebrow}</span>
-      <h2 class="display text-5xl sm:text-7xl" data-order-item>{headline}</h2>
-      <p class="text-muted-foreground max-w-md text-[15px] leading-relaxed" data-order-item>
-        {paragraph}
-      </p>
-      <div class="flex items-center gap-6" data-order-item>
-        <span class="display text-4xl">{price}</span>
-        <a
-          href={cta.href}
-          class="bg-primary text-primary-foreground rounded-full px-7 py-3 text-[13px] font-medium transition-transform duration-300 hover:scale-[1.03]"
+  </div>
+
+  <div class="relative mx-auto max-w-[1600px] px-5 pt-20 pb-24 sm:px-8 sm:pt-24 sm:pb-40">
+    <header class="text-center">
+      <p class="eyebrow mb-6" data-order-fade>{eyebrow}</p>
+      <h2 class="display text-[21vw] leading-[0.85] sm:text-[15vw] xl:text-[13.5rem]" data-order-title>
+        {headline}
+      </h2>
+    </header>
+
+    <div class="relative mt-10 sm:mt-16">
+      <figure
+        class="relative aspect-[4/3] overflow-hidden rounded-md sm:aspect-[21/10]"
+        data-order-frame
+      >
+        <img
+          data-order-image
+          src={image.src}
+          alt={image.alt}
+          class="absolute inset-0 size-full object-cover"
+          loading="lazy"
+        />
+        <div
+          class="absolute inset-0 bg-[radial-gradient(120%_90%_at_50%_40%,transparent_55%,rgb(0_0_0/0.55))]"
         >
-          {cta.label}
-        </a>
+        </div>
+      </figure>
+
+      <!-- Checkout dock: straddles the photo's lower edge so it never covers the pens. -->
+      <div
+        class="border-foreground/12 bg-background/70 relative z-10 mx-3 -mt-12 rounded-md border p-6 backdrop-blur-xl sm:absolute sm:right-8 sm:-bottom-14 sm:mx-0 sm:mt-0 sm:w-[min(30rem,calc(100%-4rem))] sm:p-8"
+        data-order-dock
+      >
+        <p class="text-foreground/75 text-[15px] leading-relaxed">{paragraph}</p>
+        <div class="hairline mt-6 flex items-center justify-between gap-4 pt-6">
+          <span class="display text-4xl sm:text-6xl">{price}</span>
+          <a
+            href={cta.href}
+            class="group bg-primary text-primary-foreground inline-flex items-center gap-3 rounded-full py-2 pr-2 pl-5 text-[13px] font-medium whitespace-nowrap transition-transform duration-300 hover:scale-[1.03] sm:pl-6"
+          >
+            {cta.label}
+            <span
+              class="bg-primary-foreground/15 grid size-9 place-items-center rounded-full transition-transform duration-500 group-hover:-rotate-45"
+              aria-hidden="true"
+            >
+              <svg viewBox="0 0 16 16" class="size-3.5" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M2 8h11M9 4l4 4-4 4" stroke-linecap="round" stroke-linejoin="round"></path>
+              </svg>
+            </span>
+          </a>
+        </div>
       </div>
     </div>
-
-    <figure class="relative aspect-[4/3] overflow-hidden" data-order-item>
-      <img
-        data-order-image
-        src={image.src}
-        alt={image.alt}
-        class="h-full w-full object-contain p-4"
-        loading="lazy"
-      />
-    </figure>
   </div>
 </section>
 
+<style>
+  /* Ambient spill from the blue product shot, so the photo sits in the page rather than on it. */
+  .order-glow {
+    background: radial-gradient(closest-side, oklch(0.45 0.13 275 / 0.28), transparent);
+    filter: blur(40px);
+  }
+</style>
+
 <script>
-  import { initGsap } from "@/lib/motion";
+  import { initGsap, splitChars } from "@/lib/motion";
 
   const root = document.querySelector<HTMLElement>("[data-order]");
 
   initGsap(root, ({ gsap, root, reduced }) => {
+    const title = root.querySelector<HTMLElement>("[data-order-title]");
+    const frame = root.querySelector<HTMLElement>("[data-order-frame]");
     const img = root.querySelector<HTMLElement>("[data-order-image]");
-    if (img) {
-      gsap.fromTo(
-        img,
-        { yPercent: -4 },
-        {
-          yPercent: 4,
-          ease: "none",
-          scrollTrigger: { trigger: root, start: "top bottom", end: "bottom top", scrub: true },
-        },
-      );
-    }
-    if (reduced) return;
-    gsap.from(root.querySelectorAll("[data-order-item]"), {
+    const dock = root.querySelector<HTMLElement>("[data-order-dock]");
+    if (reduced || !title || !frame || !img || !dock) return;
+
+    gsap.from(splitChars(title), {
+      yPercent: 110,
+      duration: 1.1,
+      ease: "power3.out",
+      stagger: 0.035,
+      scrollTrigger: { trigger: title, start: "top 85%", once: true },
+    });
+    gsap.from(root.querySelectorAll("[data-order-fade]"), {
       opacity: 0,
-      y: 30,
+      y: 20,
       duration: 0.9,
       ease: "power3.out",
-      stagger: 0.08,
       scrollTrigger: { trigger: root, start: "top 75%", once: true },
+    });
+
+    // The frame opens from a narrow window to full width while the photo settles, like a lens iris.
+    gsap
+      .timeline({
+        defaults: { ease: "none" },
+        scrollTrigger: { trigger: frame, start: "top bottom", end: "center 55%", scrub: 1 },
+      })
+      .fromTo(
+        frame,
+        { clipPath: "inset(14% 18% 14% 18% round 6px)" },
+        { clipPath: "inset(0% 0% 0% 0% round 4px)" },
+        0,
+      )
+      .fromTo(img, { scale: 1.3 }, { scale: 1 }, 0);
+
+    gsap.from(dock, {
+      y: 50,
+      opacity: 0,
+      duration: 1,
+      ease: "power3.out",
+      scrollTrigger: { trigger: frame, start: "center 70%", once: true },
     });
   });
 </script>

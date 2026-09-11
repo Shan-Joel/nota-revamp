@@ -35,7 +35,12 @@ const content = await getHomepageContent();
         secondaryCta={content.hero.secondaryCta}
         image={content.hero.image}
       />
-      <Specs title={content.specs.title} subtitle={content.specs.subtitle} groups={content.specs.groups} />
+      <Specs
+        title={content.specs.title}
+        subtitle={content.specs.subtitle}
+        groups={content.specs.groups}
+        penImage={content.hero.image.src}
+      />
       <Philosophy quote={content.philosophy.quote} body={content.philosophy.body} />
       <WhoFor
         video={content.whoFor.video}

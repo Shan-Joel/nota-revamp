@@ -6,7 +6,6 @@ interface Props {
   insetBottom?: string;
   loading?: "lazy" | "eager";
   fetchpriority?: "high" | "low" | "auto";
-  detach?: boolean;
 }
 
 const {
@@ -16,20 +15,9 @@ const {
   insetBottom = "0px",
   loading = "lazy",
   fetchpriority = "auto",
-  detach = false,
 } = Astro.props;
 
-// Pen silhouette traced from the five pen renders, in their 1920×1080 pixel space.
-const PEN_OUTLINE =
-  "M955 70L939 75L926 85L917 102L916 114L901 115L902 116L900 117L903 144L902 197L904 383L900 413L904 416L916 417L905 419L916 420L917 428L917 769L919 772L928 773L929 775L929 890L931 896L942 901L944 939L947 943L952 997L954 1002L957 1002L959 1001L961 972L968 941L976 920L988 905L987 904L992 895L992 776L993 773L1001 772L1004 769L1004 108L1000 94L992 83L981 74L965 70Z";
-
-const cutoutMask = `url("data:image/svg+xml,${encodeURIComponent(
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="none"><filter id="f"><feGaussianBlur stdDeviation="1.2"/></filter><path d="${PEN_OUTLINE}" filter="url(#f)"/></svg>`,
-)}")`;
-
-const vars =
-  `--pen-src:url("${src}");--inset-top:${insetTop};--inset-bottom:${insetBottom};` +
-  (detach ? `--pen-cutout:${cutoutMask};` : "");
+const vars = `--pen-src:url("${src}");--inset-top:${insetTop};--inset-bottom:${insetBottom};`;
 ---
 
 <div class="pen-frame" style={vars}>
@@ -44,15 +32,7 @@ const vars =
     loading={loading}
     fetchpriority={fetchpriority}
     class="pen-img"
-    data-pen-photo
   />
-  {
-    detach && (
-      <div class="pen-anchor" aria-hidden="true">
-        <img src={src} alt="" class="pen-cutout" data-pen-cutout />
-      </div>
-    )
-  }
 </div>
 
 <style>
@@ -122,23 +102,5 @@ const vars =
     -webkit-mask-composite: source-in;
     mask-image: var(--feather-x), var(--feather-y);
     mask-composite: intersect;
-  }
-
-  .pen-anchor {
-    position: absolute;
-    top: var(--inset-top);
-    left: 50%;
-    height: calc(100% - var(--inset-top) - var(--inset-bottom));
-    aspect-ratio: 1920 / 1080;
-    transform: translateX(-50%);
-  }
-
-  .pen-cutout {
-    display: block;
-    width: 100%;
-    height: 100%;
-    max-width: none;
-    -webkit-mask: var(--pen-cutout) center / 100% 100% no-repeat;
-    mask: var(--pen-cutout) center / 100% 100% no-repeat;
   }
 </style>

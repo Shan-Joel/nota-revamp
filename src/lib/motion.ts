@@ -21,13 +21,15 @@ export function initGsap(root: HTMLElement | null, setup: Setup) {
 
 // ScrollTrigger computes pin spacing in creation order, so sections must be set up top-to-bottom.
 async function flush() {
-  const [{ gsap }, { ScrollTrigger }] = await Promise.all([
+  const [{ gsap }, { ScrollTrigger }, { default: Lenis }] = await Promise.all([
     import("gsap"),
     import("gsap/ScrollTrigger"),
+    import("lenis"),
     domReady(),
   ]);
   gsap.registerPlugin(ScrollTrigger);
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!reduced) startSmoothScroll(gsap, ScrollTrigger, Lenis);
 
   const batch = pending
     .splice(0)
@@ -38,6 +40,19 @@ async function flush() {
 
   ScrollTrigger.refresh();
   flushing = undefined;
+}
+
+// Lenis eases native scrolling; ScrollTrigger reads its position every frame so scrubbed scenes stay in sync.
+function startSmoothScroll(
+  gsap: typeof gsapType,
+  ScrollTrigger: typeof ScrollTriggerType,
+  Lenis: typeof import("lenis").default,
+) {
+  // Anchor targets already carry scroll-mt-20 for the fixed header, which Lenis honours.
+  const lenis = new Lenis({ lerp: 0.09, anchors: true });
+  lenis.on("scroll", ScrollTrigger.update);
+  gsap.ticker.add((time) => lenis.raf(time * 1000));
+  gsap.ticker.lagSmoothing(0);
 }
 
 function domReady() {

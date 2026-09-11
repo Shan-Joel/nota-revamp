@@ -1,5 +1,5 @@
 ---
-import PenFrame from "@/components/PenFrame.astro";
+import PenCutout from "@/components/PenCutout.astro";
 
 interface Props {
   eyebrow: string;
@@ -20,22 +20,16 @@ const { eyebrow, headlineLine1, headlineLine2, body, primaryCta, secondaryCta, i
   data-hero
   class="relative flex min-h-[100svh] flex-col justify-end overflow-hidden pb-10"
 >
-  <div class="absolute inset-0" data-hero-image>
-    <PenFrame
-      src={image.src}
-      alt={image.alt}
-      insetTop="5rem"
-      loading="eager"
-      fetchpriority="high"
-      detach
-    />
-    <div class="from-background via-background/20 absolute inset-0 bg-gradient-to-t to-transparent">
+  <div class="hero-studio absolute inset-0" aria-hidden="true"></div>
+  <div class="hero-light" data-hero-light aria-hidden="true"></div>
+
+  <!-- Three layers so each motion owns its transform: scroll travel, idle float, then the turn. -->
+  <div class="hero-pen" role="img" aria-label={image.alt} data-hero-pen>
+    <div class="absolute inset-0" data-hero-float>
+      <div class="absolute inset-0" data-hero-turn>
+        <PenCutout src={image.src} loading="eager" fetchpriority="high" />
+      </div>
     </div>
-    <div class="from-background/80 absolute inset-0 bg-gradient-to-r to-transparent"></div>
-  </div>
-  <div
-    class="from-background pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t to-transparent"
-  >
   </div>
 
   <div class="relative mx-auto w-full max-w-[1600px] px-5 sm:px-8" data-hero-copy>
@@ -70,7 +64,59 @@ const { eyebrow, headlineLine1, headlineLine2, body, primaryCta, secondaryCta, i
       </div>
     </div>
   </div>
+
+  <div class="pointer-events-none absolute inset-0 z-10 flex" aria-hidden="true">
+    {
+      Array.from({ length: 6 }, () => (
+        <div class="hero-curtain invisible h-full flex-1" data-hero-curtain />
+      ))
+    }
+  </div>
 </section>
+
+<style>
+  /* Studio backdrop: a soft key light with a cool rim on the right, as in the product renders. */
+  .hero-studio {
+    background:
+      radial-gradient(70% 55% at 50% 40%, oklch(0.25 0.008 260 / 0.9), transparent 70%),
+      radial-gradient(35% 60% at 88% 45%, oklch(0.3 0.02 265 / 0.45), transparent 75%);
+  }
+
+  /* The pen box is sized so the pen spans most of the width lying down and fits the height standing. */
+  .hero-pen,
+  .hero-light {
+    --pen-box: min(88vw, 86svh);
+    position: absolute;
+    top: 34%;
+    left: 50%;
+    width: var(--pen-box);
+    height: var(--pen-box);
+    margin: calc(var(--pen-box) / -2) 0 0 calc(var(--pen-box) / -2);
+  }
+
+  @media (min-width: 48rem) {
+    .hero-pen,
+    .hero-light {
+      top: 42%;
+    }
+  }
+
+  .hero-light {
+    background: radial-gradient(closest-side, oklch(0.42 0.012 260 / 0.35), transparent);
+    filter: blur(30px);
+  }
+
+  /* A lit leading edge so each rising column reads against the dark hero. */
+  .hero-curtain {
+    background: linear-gradient(
+      to bottom,
+      oklch(1 0 0 / 0.1) 0,
+      var(--color-surface) 1px,
+      var(--color-background) 40vh
+    );
+    box-shadow: 0 -30px 60px -10px rgb(0 0 0 / 0.6);
+  }
+</style>
 
 <script>
   import { initGsap, splitChars } from "@/lib/motion";
@@ -80,48 +126,59 @@ const { eyebrow, headlineLine1, headlineLine2, body, primaryCta, secondaryCta, i
   initGsap(root, ({ gsap, root, reduced }) => {
     const line1 = root.querySelector<HTMLElement>("[data-hero-line='1']");
     const line2 = root.querySelector<HTMLElement>("[data-hero-line='2']");
-    const image = root.querySelector<HTMLElement>("[data-hero-image]");
+    const pen = root.querySelector<HTMLElement>("[data-hero-pen]");
+    const float = root.querySelector<HTMLElement>("[data-hero-float]");
+    const turn = root.querySelector<HTMLElement>("[data-hero-turn]");
+    const light = root.querySelector<HTMLElement>("[data-hero-light]");
+    const copy = root.querySelector<HTMLElement>("[data-hero-copy]");
     const meta = root.querySelectorAll<HTMLElement>("[data-hero-meta]");
-    if (!line1 || !line2 || !image) return;
+    if (!line1 || !line2 || !pen || !float || !turn || !light || !copy) return;
 
     const chars = [...splitChars(line1), ...splitChars(line2)];
 
+    // Lying flat first, so the whole pen reads across the screen before it stands up.
+    gsap.set(turn, { rotation: -90 });
+    gsap.set(light, { scaleX: 1.5, scaleY: 0.45 });
+
     if (reduced) {
-      gsap.set([chars, image, meta], { opacity: 1, y: 0 });
+      gsap.set([chars, meta], { opacity: 1, y: 0 });
       return;
     }
 
-    const tl = gsap.timeline({ delay: 1.9, defaults: { ease: "power3.out" } });
-    tl.from(chars, { yPercent: 115, duration: 1.1, stagger: 0.018 })
-      .from(image, { opacity: 0, scale: 1.08, duration: 1.6, ease: "power2.out" }, 0.15)
+    const intro = gsap.timeline({ delay: 1.9, defaults: { ease: "power3.out" } });
+    intro
+      .from(chars, { yPercent: 115, duration: 1.1, stagger: 0.018 })
+      .from(pen, { x: () => -innerWidth * 0.35, opacity: 0, duration: 2.2, ease: "expo.out" }, 0)
+      .from(light, { opacity: 0, duration: 1.8, ease: "power2.out" }, 0.3)
       .from(meta, { opacity: 0, y: 18, duration: 0.9, stagger: 0.12 }, 0.8);
 
-    gsap.to(image, {
-      yPercent: 12,
-      ease: "none",
-      scrollTrigger: { trigger: root, start: "top top", end: "bottom top", scrub: true },
-    });
-    gsap.to(root.querySelector("[data-hero-copy]"), {
-      opacity: 0,
-      y: -40,
-      ease: "none",
-      scrollTrigger: { trigger: root, start: "40% top", end: "bottom top", scrub: true },
-    });
+    gsap.to(float, { y: -10, duration: 2.8, ease: "sine.inOut", yoyo: true, repeat: -1 });
 
-    const photo = root.querySelector<HTMLElement>("[data-pen-photo]");
-    const cutout = root.querySelector<HTMLElement>("[data-pen-cutout]");
-    if (photo && cutout) {
-      gsap
-        .timeline({
-          defaults: { ease: "none" },
-          scrollTrigger: { trigger: root, start: "top top", end: "bottom top", scrub: 0.6 },
-        })
-        .to(photo, { opacity: 0, duration: 0.08 }, 0)
-        .to(
-          cutout,
-          { yPercent: -48, xPercent: 12, rotation: 16, scale: 0.84, duration: 0.92 },
-          0.08,
-        );
-    }
+    // Standing up, the pen centres just below the header and grows on narrow screens to fill the height.
+    const standY = () => innerHeight * 0.54 - (pen.offsetTop + pen.offsetHeight / 2);
+    const standScale = () =>
+      gsap.utils.clamp(1, 1.9, (innerHeight * 0.7) / (turn.offsetHeight * 0.863));
+
+    // Pinned: the pen turns upright as the copy clears, then curtains rise to hand off to the next section.
+    const curtains = root.querySelectorAll<HTMLElement>("[data-hero-curtain]");
+    gsap.set(curtains, { yPercent: 100, autoAlpha: 1 });
+
+    gsap
+      .timeline({
+        defaults: { ease: "power2.inOut" },
+        scrollTrigger: {
+          trigger: root,
+          start: "top top",
+          end: "+=200%",
+          pin: true,
+          scrub: 1,
+          invalidateOnRefresh: true,
+        },
+      })
+      .to(turn, { rotation: 0, scale: standScale, duration: 1 }, 0)
+      .to(pen, { y: standY, duration: 1 }, 0)
+      .to(light, { scaleX: 0.7, scaleY: 1.25, y: standY, duration: 1 }, 0)
+      .to(copy, { y: 60, opacity: 0, duration: 0.45, ease: "power1.in" }, 0)
+      .to(curtains, { yPercent: 0, duration: 0.6, stagger: 0.08 }, 1.25);
   });
 </script>

@@ -1,42 +1,79 @@
 ---
+import PenCutout from "@/components/PenCutout.astro";
+
 interface Props {
   title: string;
   subtitle: string;
   groups: { title: string; items: string[] }[];
+  penImage: string;
 }
 
-const { title, subtitle, groups } = Astro.props;
+const { title, subtitle, groups, penImage } = Astro.props;
+const offsets = ["md:mt-0", "md:mt-24", "md:mt-48"];
 ---
 
-<section
-  id="specifications"
-  data-specs
-  class="mx-auto max-w-[1600px] scroll-mt-20 px-5 py-24 sm:px-8 sm:py-32"
->
-  <div class="hairline flex flex-col gap-2 pt-6 sm:flex-row sm:items-baseline sm:justify-between">
-    <h2 class="display text-4xl sm:text-6xl">{title}</h2>
-    <p class="text-muted-foreground text-sm">{subtitle}</p>
-  </div>
+<!-- overflow-x-clip, not overflow-hidden: the phone card stack relies on position: sticky. -->
+<section id="specifications" data-specs class="relative scroll-mt-20 overflow-x-clip">
+  <div class="mx-auto max-w-[1600px] px-5 pt-28 pb-32 sm:px-8 sm:pt-36">
+    <header class="text-center">
+      <p class="eyebrow mb-6" data-specs-intro>{subtitle}</p>
+      <h2 class="display text-5xl sm:text-7xl lg:text-8xl" data-specs-intro>{title}</h2>
+    </header>
 
-  <div class="mt-14 grid gap-12 md:grid-cols-3 md:gap-8">
-    {
-      groups.map((g) => (
-        <div data-spec-group>
-          <h3 class="eyebrow mb-6" data-spec-row>
-            {g.title}
-          </h3>
-          <ul>
-            {g.items.map((item) => (
-              <li data-spec-row class="hairline text-foreground/85 py-4 text-[15px] leading-snug">
-                {item}
-              </li>
-            ))}
-          </ul>
+    <div class="relative mt-6 sm:mt-16" data-specs-stage>
+      <!-- Phones: the pen gets its own band above the cards. Wider screens: it rises behind them. -->
+      <div
+        class="pointer-events-none relative flex h-[64svh] justify-center md:absolute md:inset-x-0 md:top-0 md:h-auto"
+        aria-hidden="true"
+        data-specs-band
+      >
+        <div class="specs-glow absolute top-[8%] h-[min(70vh,44rem)] w-[min(38rem,80vw)]"></div>
+        <div class="relative h-full w-full md:h-[min(92vh,60rem)]" data-specs-pen>
+          <PenCutout src={penImage} class="rotate-180" />
         </div>
-      ))
-    }
+      </div>
+
+      <div class="relative grid gap-4 md:grid-cols-3 md:gap-5 md:pt-[34vh]">
+        {
+          groups.map((g, i) => (
+            <article
+              data-spec-card
+              style={`--i:${i}`}
+              class:list={[
+                "border-border bg-surface rounded-md border p-7 shadow-[0_-24px_48px_-24px_rgb(0_0_0/0.7)] sm:p-9",
+                "max-md:sticky max-md:top-[calc(5.5rem+var(--i)*0.875rem)] max-md:origin-top",
+                "md:bg-surface/50 md:shadow-none md:backdrop-blur-xl",
+                offsets[i],
+              ]}
+            >
+              <h3 class="display text-2xl sm:text-3xl" data-spec-row>
+                {g.title}
+              </h3>
+              <ul class="mt-6">
+                {g.items.map((item) => (
+                  <li
+                    data-spec-row
+                    class="hairline text-foreground/85 flex items-center justify-between gap-4 py-3.5 text-[15px] leading-snug"
+                  >
+                    <span>{item}</span>
+                    <span class="bg-primary/70 size-1.5 shrink-0 rounded-full" aria-hidden="true" />
+                  </li>
+                ))}
+              </ul>
+            </article>
+          ))
+        }
+      </div>
+    </div>
   </div>
 </section>
+
+<style>
+  .specs-glow {
+    background: radial-gradient(closest-side, oklch(0.32 0.004 60 / 0.55), transparent);
+    filter: blur(24px);
+  }
+</style>
 
 <script>
   import { initGsap } from "@/lib/motion";
@@ -45,14 +82,87 @@ const { title, subtitle, groups } = Astro.props;
 
   initGsap(root, ({ gsap, root, reduced }) => {
     if (reduced) return;
-    root.querySelectorAll<HTMLElement>("[data-spec-group]").forEach((group) => {
-      gsap.from(group.querySelectorAll("[data-spec-row]"), {
-        opacity: 0,
-        y: 22,
-        duration: 0.8,
-        ease: "power3.out",
-        stagger: 0.08,
-        scrollTrigger: { trigger: group, start: "top 82%", once: true },
+    const stage = root.querySelector<HTMLElement>("[data-specs-stage]");
+    const band = root.querySelector<HTMLElement>("[data-specs-band]");
+    const pen = root.querySelector<HTMLElement>("[data-specs-pen]");
+    const cards = [...root.querySelectorAll<HTMLElement>("[data-spec-card]")];
+    const rows = (card: HTMLElement) => card.querySelectorAll("[data-spec-row]");
+
+    gsap.from(root.querySelectorAll("[data-specs-intro]"), {
+      opacity: 0,
+      y: 30,
+      duration: 1,
+      ease: "power3.out",
+      stagger: 0.1,
+      scrollTrigger: { trigger: root, start: "top 75%", once: true },
+    });
+
+    const mm = gsap.matchMedia();
+
+    // Wide screens: the pen rises through the stage while the cards drift up at staggered speeds.
+    mm.add("(min-width: 48rem)", () => {
+      gsap.fromTo(
+        pen,
+        { yPercent: 45 },
+        {
+          yPercent: -6,
+          ease: "none",
+          scrollTrigger: { trigger: stage, start: "top bottom", end: "bottom top", scrub: 1 },
+        },
+      );
+      cards.forEach((card, i) => {
+        gsap.fromTo(
+          card,
+          { y: 140 + i * 70 },
+          {
+            y: 0,
+            ease: "none",
+            scrollTrigger: { trigger: stage, start: "top bottom", end: "center 60%", scrub: 1 },
+          },
+        );
+        // Triggered by the stage: each card starts offset by its float, which would skew its own trigger.
+        gsap.from(rows(card), {
+          opacity: 0,
+          y: 16,
+          duration: 0.7,
+          ease: "power3.out",
+          stagger: 0.06,
+          delay: i * 0.15,
+          scrollTrigger: { trigger: stage, start: "top 65%", once: true },
+        });
+      });
+    });
+
+    // Phones: the pen straightens as it rises into view, then the cards stack like a deck.
+    mm.add("(max-width: 47.99rem)", () => {
+      gsap.fromTo(
+        pen,
+        { yPercent: 30, rotation: -14 },
+        {
+          yPercent: 0,
+          rotation: 0,
+          ease: "none",
+          scrollTrigger: { trigger: band, start: "top bottom", end: "bottom 75%", scrub: 1 },
+        },
+      );
+      cards.forEach((card, i) => {
+        gsap.from(rows(card), {
+          opacity: 0,
+          y: 16,
+          duration: 0.7,
+          ease: "power3.out",
+          stagger: 0.06,
+          scrollTrigger: { trigger: card, start: "top 85%", once: true },
+        });
+        const next = cards[i + 1];
+        if (!next) return;
+        // Recede as the next card slides over it.
+        gsap.to(card, {
+          scale: 0.94,
+          opacity: 0.45,
+          ease: "none",
+          scrollTrigger: { trigger: next, start: "top bottom", end: "top 20%", scrub: true },
+        });
       });
     });
   });
