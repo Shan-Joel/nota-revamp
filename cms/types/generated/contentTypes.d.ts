@@ -433,6 +433,37 @@ export interface ApiHomepageHomepage extends Struct.SingleTypeSchema {
   };
 }
 
+export interface ApiNotFoundPageNotFoundPage extends Struct.SingleTypeSchema {
+  collectionName: "not_found_pages";
+  info: {
+    description: "Everything shown on the page visitors see when a link doesn't exist.";
+    displayName: "404 page";
+    pluralName: "not-found-pages";
+    singularName: "not-found-page";
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    body: Schema.Attribute.Text & Schema.Attribute.Required;
+    code: Schema.Attribute.String & Schema.Attribute.Required & Schema.Attribute.DefaultTo<"404">;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> & Schema.Attribute.Private;
+    eyebrow: Schema.Attribute.String & Schema.Attribute.Required;
+    headline: Schema.Attribute.String & Schema.Attribute.Required;
+    headlineItalic: Schema.Attribute.String & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<"oneToMany", "api::not-found-page.not-found-page"> &
+      Schema.Attribute.Private;
+    primaryCta: Schema.Attribute.Component<"shared.link", false> & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    secondaryCta: Schema.Attribute.Component<"shared.link", false> & Schema.Attribute.Required;
+    seoTitle: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> & Schema.Attribute.Private;
+  };
+}
+
 export interface PluginContentReleasesRelease extends Struct.CollectionTypeSchema {
   collectionName: "strapi_releases";
   info: {
@@ -863,6 +894,7 @@ declare module "@strapi/strapi" {
       "admin::transfer-token-permission": AdminTransferTokenPermission;
       "admin::user": AdminUser;
       "api::homepage.homepage": ApiHomepageHomepage;
+      "api::not-found-page.not-found-page": ApiNotFoundPageNotFoundPage;
       "plugin::content-releases.release": PluginContentReleasesRelease;
       "plugin::content-releases.release-action": PluginContentReleasesReleaseAction;
       "plugin::i18n.locale": PluginI18NLocale;

@@ -14,83 +14,87 @@ interface Props {
 const { code, eyebrow, headline, headlineItalic, body, primaryCta, secondaryCta } = Astro.props;
 ---
 
-<section data-not-found class="relative flex flex-1 flex-col justify-center overflow-hidden pt-28 pb-20">
-  <div class="@container pointer-events-none absolute inset-x-0 bottom-0 select-none" aria-hidden="true">
-    <p class="display nf-code text-center text-[46cqi] whitespace-nowrap" data-nf-code>{code}</p>
-  </div>
+<section data-not-found class="relative flex flex-1 items-center overflow-hidden pt-28 pb-20">
+  <div
+    class="relative mx-auto grid w-full max-w-[1600px] items-center gap-10 px-5 sm:px-8 lg:grid-cols-12 lg:gap-8"
+  >
+    <div class="lg:col-span-7">
+      <p class="eyebrow mb-8" data-nf-meta>{eyebrow}</p>
 
-  <div class="relative mx-auto w-full max-w-[1600px] px-5 sm:px-8">
-    <p class="eyebrow mb-8" data-nf-meta>{eyebrow}</p>
-
-    <h1 class="display text-[14vw] leading-[0.9] sm:text-[10vw] lg:text-[7vw]">
-      <span class="block overflow-hidden" data-nf-line>{headline}</span>
-      <span class="relative block w-fit">
-        <span class="block overflow-hidden italic" data-nf-line>{headlineItalic}</span>
-        <svg
-          class="text-primary absolute -bottom-[0.14em] left-0 h-[0.3em] w-full"
-          viewBox="0 0 400 24"
-          preserveAspectRatio="none"
-          fill="none"
-          aria-hidden="true"
-        >
-          <path
-            class="nf-stroke"
-            d="M3 15 C 80 4, 160 21, 240 11 S 360 5, 397 13"
-            stroke="currentColor"
-            stroke-width="2.5"
-            stroke-linecap="round"
-            vector-effect="non-scaling-stroke"
-            pathLength="1"
-            data-nf-stroke></path>
-        </svg>
-      </span>
-    </h1>
-
-    <div
-      class="hairline mt-14 flex max-w-4xl flex-col gap-6 pt-6 sm:flex-row sm:items-end sm:justify-between"
-    >
-      <p class="text-muted-foreground max-w-md text-[15px] leading-relaxed" data-nf-meta>
-        {body}
-      </p>
-      <div class="flex shrink-0 items-center gap-5" data-nf-meta>
-        <a
-          href={primaryCta.href}
-          class="bg-foreground text-background group/home inline-flex items-center gap-2 rounded-full px-6 py-3 text-[13px] font-medium transition-transform duration-300 hover:scale-[1.03]"
-        >
+      <h1 class="display text-[14vw] leading-[0.9] sm:text-[10vw] lg:text-[6.5vw]">
+        <span class="block overflow-hidden" data-nf-line>{headline}</span>
+        <span class="relative block w-fit">
+          <span class="block overflow-hidden italic" data-nf-line>{headlineItalic}</span>
           <svg
-            class="size-3.5 transition-transform duration-300 group-hover/home:-translate-x-0.5"
-            viewBox="0 0 16 16"
+            class="text-primary absolute -bottom-[0.14em] left-0 h-[0.3em] w-full"
+            viewBox="0 0 400 24"
+            preserveAspectRatio="none"
             fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
             aria-hidden="true"
           >
-            <path d="M13 8H3M7 4L3 8l4 4"></path>
+            <path
+              class="nf-stroke"
+              d="M3 15 C 80 4, 160 21, 240 11 S 360 5, 397 13"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              pathLength="1"
+              data-nf-stroke></path>
           </svg>
-          {primaryCta.label}
-        </a>
-        <a
-          href={secondaryCta.href}
-          class="text-muted-foreground hover:text-foreground text-[13px] transition-colors duration-300"
-        >
-          {secondaryCta.label}
-        </a>
+        </span>
+      </h1>
+
+      <div
+        class="hairline mt-14 flex flex-col gap-6 pt-6 sm:flex-row sm:items-end sm:justify-between"
+      >
+        <p class="text-muted-foreground max-w-md text-[15px] leading-relaxed" data-nf-meta>
+          {body}
+        </p>
+        <div class="flex shrink-0 items-center gap-5" data-nf-meta>
+          <a
+            href={primaryCta.href}
+            class="bg-foreground text-background group/home inline-flex items-center gap-2 rounded-full px-6 py-3 text-[13px] font-medium transition-transform duration-300 hover:scale-[1.03]"
+          >
+            <svg
+              class="size-3.5 transition-transform duration-300 group-hover/home:-translate-x-0.5"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M13 8H3M7 4L3 8l4 4"></path>
+            </svg>
+            {primaryCta.label}
+          </a>
+          <a
+            href={secondaryCta.href}
+            class="text-muted-foreground hover:text-foreground text-[13px] transition-colors duration-300"
+          >
+            {secondaryCta.label}
+          </a>
+        </div>
       </div>
+    </div>
+
+    <div class="@container order-first select-none lg:order-none lg:col-span-5" aria-hidden="true">
+      <p class="display nf-code text-center text-[62cqi] whitespace-nowrap lg:text-right" data-nf-code>
+        {code}
+      </p>
     </div>
   </div>
 </section>
 
 <style>
   .nf-code {
-    line-height: 0.8;
+    line-height: 0.85;
     letter-spacing: -0.02em;
     color: transparent;
     -webkit-text-stroke: 1px var(--color-border);
-    transform: translateY(16%);
-    -webkit-mask-image: linear-gradient(to bottom, #000 25%, transparent 90%);
-    mask-image: linear-gradient(to bottom, #000 25%, transparent 90%);
+    -webkit-mask-image: linear-gradient(to bottom, #000 30%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 30%, transparent 100%);
   }
 
   .nf-stroke {
