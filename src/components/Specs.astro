@@ -43,14 +43,17 @@ const strokes = [WORD, CROSSBAR, MACRON];
           <linearGradient
             id="specs-sheen"
             gradientUnits="userSpaceOnUse"
-            x1="-200"
+            x1="-320"
             y1="0"
             x2="0"
             y2="0"
             data-specs-sheen
           >
+            <!-- A wide band with feathered edges, so the red swells in and out rather than reading as a line. -->
             <stop offset="0" class="sheen-stop" stop-opacity="0"></stop>
-            <stop offset="0.5" class="sheen-stop" stop-opacity="0.95"></stop>
+            <stop offset="0.3" class="sheen-stop" stop-opacity="0.35"></stop>
+            <stop offset="0.5" class="sheen-stop" stop-opacity="0.85"></stop>
+            <stop offset="0.7" class="sheen-stop" stop-opacity="0.35"></stop>
             <stop offset="1" class="sheen-stop" stop-opacity="0"></stop>
           </linearGradient>
         </defs>
@@ -204,7 +207,7 @@ const strokes = [WORD, CROSSBAR, MACRON];
       gsap.set(pen, { x: 0, y: 0, rotation: 0 });
       gsap.set(pen, { motionPath: { ...along(word), end: 0 }, rotation: 32 });
       gsap.set(lift, { transformOrigin: `${NIB[0] * 100}% ${NIB[1] * 100}%` });
-      gsap.set(sheen, { attr: { x1: -200, x2: 0 } });
+      gsap.set(sheen, { attr: { x1: -320, x2: 0 } });
       inks.forEach((ink) => {
         const length = ink.getTotalLength();
         // Hidden until its stroke starts: a zero-length dash still paints its round cap as a dot.
@@ -252,7 +255,7 @@ const strokes = [WORD, CROSSBAR, MACRON];
       stroke(macron, 0.4);
       tl.to(lift, { y: -90, opacity: 0, duration: 0.9, ease: "power2.in" }, "+=0.15").to(
         sheen,
-        { attr: { x1: 700, x2: 900 }, duration: 1.8, ease: "power2.inOut" },
+        { attr: { x1: 700, x2: 1020 }, duration: 2.8, ease: "sine.inOut" },
         "-=0.4",
       );
 
