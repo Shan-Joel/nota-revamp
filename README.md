@@ -1,78 +1,198 @@
-# nōta — Astro site
+<div align="center">
 
-Astro rebuild of the nōta homepage. Every text, image and video on the page comes from the Strapi
-CMS in [`cms`](cms); this project holds only the layout, styles and GSAP animations.
+# nōta
 
-## Running locally
+**A cinematic, CMS-driven product site for the nōta smart pen.**
 
-1. Start Strapi from `cms`:
+Static-first Astro frontend · Strapi headless CMS · scroll-driven GSAP storytelling
 
-   ```bash
-   npm run develop
-   ```
+[Live site](https://nota-revamp.vercel.app) · [Architecture](#architecture) · [Getting started](#getting-started) · [Deployment](#deployment)
 
-   The API runs at http://localhost:1337 and the admin panel at http://localhost:1337/admin.
-   On an empty database, Strapi seeds itself on first start: it uploads the media in
-   `cms/data/uploads` and publishes the homepage.
+<br/>
 
-2. Start this site:
+![Astro](https://img.shields.io/badge/Astro-BC52EE?style=for-the-badge&logo=astro&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
+![GSAP](https://img.shields.io/badge/GSAP-0AE448?style=for-the-badge&logo=gsap&logoColor=black)
+![Strapi](https://img.shields.io/badge/Strapi-4945FF?style=for-the-badge&logo=strapi&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+![Cloudinary](https://img.shields.io/badge/Cloudinary-3448C5?style=for-the-badge&logo=cloudinary&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
+![Railway](https://img.shields.io/badge/Railway-0B0D0E?style=for-the-badge&logo=railway&logoColor=white)
 
-   ```bash
-   npm install
-   npm run dev
-   ```
+</div>
 
-   Open http://localhost:4321. In dev, a page refresh shows the latest published Strapi content.
+---
 
-`STRAPI_URL` (server-only) tells Astro where Strapi runs. Dev defaults to `http://localhost:1337`;
-production builds read it from `.env.production`.
+## Overview
 
-## How content flows
+nōta is a single-page product experience built for speed and editability:
 
-- `src/lib/strapi.ts` fetches the published **Homepage** and **404 page** single types through
-  Strapi's public, read-only API and maps them into the `HomepageContent` and `NotFoundContent`
-  shapes.
-- `src/content/homepage.ts` and `src/content/not-found.ts` define those shapes.
-  `getHomepageContent()` and `getNotFoundContent()` are the only entry points pages use;
-  components receive their slice as props.
-- The site builds to static files, so it only shows newly published content after a rebuild.
-- Media: local dev stores uploads in `cms/public/uploads`; production stores them on Cloudinary.
+- **Fast by default** — pages are pre-rendered to static HTML and served from Vercel's edge CDN. No server runs per request.
+- **Fully editable** — every headline, paragraph, image and video comes from Strapi. Editors publish; the site rebuilds itself.
+- **Motion-led storytelling** — pinned, scroll-driven scenes (GSAP + Lenis) walk the visitor through the product, and all of them respect `prefers-reduced-motion`.
 
-The hero's scroll animation cuts the pen out of its photo with an outline traced from the studio
-pen render (`PenFrame.astro`). Replacing the hero image with a different shot breaks that cutout.
+## Tech stack
+
+| Layer    | Technology                                                                                                                                                                                | Role                                                              |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Frontend | ![Astro](https://img.shields.io/badge/Astro_5-BC52EE?logo=astro&logoColor=white) ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)            | Static site generation, typed components and content              |
+| Styling  | ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS_4-06B6D4?logo=tailwindcss&logoColor=white)                                                                                      | CSS-first design tokens (`@theme`), utility classes               |
+| Motion   | ![GSAP](https://img.shields.io/badge/GSAP_3-0AE448?logo=gsap&logoColor=black) ![Lenis](https://img.shields.io/badge/Lenis-111111?logoColor=white)                                         | ScrollTrigger scenes, MotionPath handwriting, smooth scrolling    |
+| CMS      | ![Strapi](https://img.shields.io/badge/Strapi_5-4945FF?logo=strapi&logoColor=white)                                                                                                       | Headless content model, admin panel, public read-only REST API    |
+| Database | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white) ![SQLite](<https://img.shields.io/badge/SQLite_(local)-003B57?logo=sqlite&logoColor=white>) | Postgres in production, SQLite for local development              |
+| Media    | ![Cloudinary](https://img.shields.io/badge/Cloudinary-3448C5?logo=cloudinary&logoColor=white)                                                                                             | Image and video storage with optimised delivery (`f_auto,q_auto`) |
+| Hosting  | ![Vercel](https://img.shields.io/badge/Vercel-000000?logo=vercel&logoColor=white) ![Railway](https://img.shields.io/badge/Railway-0B0D0E?logo=railway&logoColor=white)                    | Vercel serves the site; Railway runs Strapi and Postgres          |
+
+## Architecture
+
+The system is split into a **content plane** (Strapi on Railway, media on Cloudinary) and a **delivery plane** (static pages on Vercel). Content is only read at build time, so visitors never touch the CMS.
+
+```mermaid
+flowchart TB
+    editor(["Content editor"])
+
+    subgraph content["Content plane · Railway + Cloudinary"]
+        direction LR
+        strapi["Strapi 5<br/>admin + REST API"]
+        db[("PostgreSQL")]
+        media[("Cloudinary<br/>images and video")]
+        db --- strapi --- media
+    end
+
+    subgraph delivery["Delivery plane · Vercel"]
+        direction LR
+        build["Astro build<br/>static generation"] -->|"4 · deploy"| edge["Edge CDN<br/>HTML · CSS · JS"]
+    end
+
+    visitor(["Visitor"])
+
+    editor -->|"1 · edit and publish"| strapi
+    strapi -->|"2 · deploy hook"| build
+    build -.->|"3 · fetch published content"| strapi
+    edge -->|"static pages"| visitor
+    media -.->|"optimised media"| visitor
+```
+
+**How a page is built**
+
+1. `src/lib/strapi.ts` fetches the published **Homepage** and **404 page** single types from Strapi's public, read-only API.
+2. The raw responses are mapped into typed shapes (`HomepageContent`, `NotFoundContent`) defined in `src/content/`.
+3. `src/pages/index.astro` passes each section its slice of content as props; components never fetch data themselves.
+4. Astro renders everything to static files. Client-side JavaScript is limited to the animations, the mobile menu and video playback.
+
+## Publishing workflow
+
+Publishing or unpublishing in Strapi fires a document-service middleware (`cms/src/index.ts`) that calls the Vercel deploy hook. Vercel rebuilds the site with the new content and swaps it in atomically.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Editor
+    participant CMS as Strapi (Railway)
+    participant Build as Vercel build
+    participant Site as Live site
+    Editor->>CMS: Publish Homepage or 404 page
+    CMS->>Build: POST deploy hook
+    Build->>CMS: GET published content
+    Note over Build: astro build → static pages
+    Build->>Site: Deploy to edge CDN
+    Site-->>Editor: Change is live
+```
+
+> [!IMPORTANT]
+> **Changes go live in about 5–6 seconds.**
+> Because the site is statically generated, every publish triggers a fresh build. After publishing in Strapi, wait around **5–6 seconds**, then refresh the live site to see the update.
+
+## Motion system
+
+| Scene                 | What happens                                                                                       | Built with                       |
+| --------------------- | -------------------------------------------------------------------------------------------------- | -------------------------------- |
+| Global                | Momentum smooth scrolling, synced to every scroll-driven scene                                     | Lenis + ScrollTrigger            |
+| Hero                  | The pen enters lying flat, turns upright as you scroll, then curtains hand off to the next section | Pinned, scrubbed timeline        |
+| Specifications        | A pen writes "nōta" in cursive; scroll is held until the writing finishes, once per visit          | MotionPath along SVG strokes     |
+| Sync & Inside the box | Product renders crossfade frame by frame while captions change                                     | Pinned, scrubbed frame sequences |
+| Order                 | The product shot opens like a lens iris behind a floating checkout panel                           | `clip-path` reveal               |
+
+Background videos start buffering about one screen before they come into view and pause when off-screen (`src/lib/video.ts`).
+
+## Project structure
+
+```text
+.
+├── src/
+│   ├── pages/           # index.astro (homepage) and 404.astro
+│   ├── layouts/         # Layout.astro: <head>, SEO meta, fonts, favicons
+│   ├── components/      # One component per section, plus PenCutout and PenFrame
+│   ├── content/         # Typed content shapes and getHomepageContent() / getNotFoundContent()
+│   ├── lib/             # strapi.ts (fetch + mapping), motion.ts (GSAP/Lenis), video.ts
+│   └── styles/          # global.css: Tailwind v4 theme and design tokens
+├── public/              # Favicons and web manifest
+├── cms/                 # Strapi project
+│   ├── src/api/         # Homepage and 404 page single types
+│   ├── src/components/  # Reusable section and item components
+│   ├── src/index.ts     # Publish → Vercel rebuild hook
+│   ├── src/seed.ts      # Seeds content and media into an empty database
+│   └── config/          # Database, server, and production (Cloudinary) config
+└── .env.production      # Public STRAPI_URL used by production builds
+```
+
+## Getting started
+
+**Prerequisites:** Node.js 20 or later, and npm.
+
+**1. Start the CMS**
+
+```bash
+cd cms
+cp .env.example .env   # replace the placeholder secrets
+npm install
+npm run develop
+```
+
+The admin panel opens at `http://localhost:1337/admin`. On an empty database, Strapi seeds itself on first start: it uploads the bundled media and publishes the homepage.
+
+**2. Start the site** (from the repository root, in a second terminal)
+
+```bash
+npm install
+npm run dev
+```
+
+Open `http://localhost:4321`. In development, refreshing the page shows the latest published content.
+
+### Scripts
+
+| Command                           | Description                                                    |
+| --------------------------------- | -------------------------------------------------------------- |
+| `npm run dev`                     | Start the Astro dev server                                     |
+| `npm run build`                   | Type-check and build for production (Strapi must be reachable) |
+| `npm run preview`                 | Preview the production build locally                           |
+| `npm run lint` / `npm run format` | ESLint and Prettier                                            |
 
 ## Deployment
 
-| Piece | Where | Notes |
-| --- | --- | --- |
-| Strapi | Railway service `nota-revamp` (root `/cms`) | Redeploys only when `cms/` changes; sleeps when idle |
-| Database | Railway Postgres | Linked through `DATABASE_URL=${{Postgres.DATABASE_URL}}` |
-| Media | Cloudinary, folder `nota` | Production-only upload provider (`cms/config/env/production`) |
-| Site | Vercel, repo root | Static build; reads `STRAPI_URL` from `.env.production` |
+| Service  | Platform                   | Notes                                                                      |
+| -------- | -------------------------- | -------------------------------------------------------------------------- |
+| Website  | Vercel                     | Builds from the repository root; reads `STRAPI_URL` from `.env.production` |
+| CMS      | Railway (root `/cms`)      | Redeploys only when `cms/` changes; sleeps when idle                       |
+| Database | Railway PostgreSQL         | Linked via `DATABASE_URL=${{Postgres.DATABASE_URL}}`                       |
+| Media    | Cloudinary (folder `nota`) | Upload provider enabled in production only                                 |
 
-Publishing or unpublishing the Homepage or the 404 page in Strapi calls the Vercel deploy hook stored in Railway's
-`VERCEL_DEPLOY_HOOK_URL`, which rebuilds the live site (`cms/src/index.ts`).
+### Environment variables
 
-Railway variables for the Strapi service: `NODE_ENV`, `DATABASE_CLIENT`, `DATABASE_URL`,
-`DATABASE_POOL_MIN`, `PUBLIC_URL`, `CLOUDINARY_NAME`, `CLOUDINARY_KEY`, `CLOUDINARY_SECRET`,
-`VERCEL_DEPLOY_HOOK_URL`, and Strapi's secrets (`APP_KEYS`, `API_TOKEN_SALT`, `ADMIN_JWT_SECRET`,
-`JWT_SECRET`, `TRANSFER_TOKEN_SALT`, `ENCRYPTION_KEY`).
+**Website**
 
-## Commands
+| Variable     | Description                                                                    |
+| ------------ | ------------------------------------------------------------------------------ |
+| `STRAPI_URL` | Base URL of the Strapi API. Defaults to `http://localhost:1337` in development |
 
-```bash
-npm run dev        # start the dev server
-npm run build      # type-check and build for production (needs Strapi reachable)
-npm run preview    # preview the production build
-```
+**CMS (Railway)**
 
-## Structure
-
-- `src/pages/index.astro` — assembles the homepage sections
-- `src/components/*.astro` — one file per section, plus `PenFrame.astro` for the pen imagery
-- `src/layouts/Layout.astro` — `<html>`/`<head>` shell, fonts, global stylesheet, SEO meta
-- `src/content/homepage.ts` — the typed content shape and `getHomepageContent()`
-- `src/lib/strapi.ts` — Strapi fetch and response mapping
-- `src/lib/motion.ts` — shared GSAP helpers (`initGsap`, `splitChars`, `splitWords`)
-- `src/styles/global.css` — Tailwind v4 theme and design tokens
-- `cms/` — the Strapi project (content model, seed, production config)
+| Variable                                                                                                | Description                                           |
+| ------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| `DATABASE_CLIENT`, `DATABASE_URL`                                                                       | `postgres` and the Railway Postgres connection string |
+| `PUBLIC_URL`                                                                                            | Public URL of the Strapi service                      |
+| `CLOUDINARY_NAME`, `CLOUDINARY_KEY`, `CLOUDINARY_SECRET`                                                | Cloudinary credentials for media uploads              |
+| `VERCEL_DEPLOY_HOOK_URL`                                                                                | Deploy hook called on publish to rebuild the site     |
+| `APP_KEYS`, `API_TOKEN_SALT`, `ADMIN_JWT_SECRET`, `JWT_SECRET`, `TRANSFER_TOKEN_SALT`, `ENCRYPTION_KEY` | Strapi security secrets                               |
