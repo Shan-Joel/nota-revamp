@@ -136,6 +136,11 @@ export const fetchNotFoundPage = () =>
 // Local uploads come back as "/uploads/..." paths; cloud providers return absolute URLs.
 const mediaUrl = (media: Media) => new URL(media.url, STRAPI_URL).toString();
 
+// Cloudinary serves an upload byte-for-byte, and these MP4s keep their index at the end, so playback waits on an
+// extra range request. Its optimised delivery re-encodes to a smaller file that streams from the first bytes.
+const videoUrl = (media: Media) =>
+  mediaUrl(media).replace("/video/upload/", "/video/upload/f_auto:video,q_auto/");
+
 const link = ({ label, href }: NavLink): NavLink => ({ label, href });
 
 const image = (media: Media, alt: string | null) => ({
@@ -181,7 +186,7 @@ export function toHomepageContent(s: StrapiHomepage): HomepageContent {
     },
     philosophy: { quote: s.philosophy.quote, body: s.philosophy.body },
     whoFor: {
-      video: { src: mediaUrl(s.whoFor.video) },
+      video: { src: videoUrl(s.whoFor.video) },
       headlinePrefix: s.whoFor.headlinePrefix,
       headlineItalic: s.whoFor.headlineItalic,
       paragraphs: [s.whoFor.paragraphLead, s.whoFor.paragraphSecondary],
@@ -213,7 +218,7 @@ export function toHomepageContent(s: StrapiHomepage): HomepageContent {
         headingItalic: s.boxSet.headingItalic,
         paragraph: s.boxSet.paragraph,
         items: s.boxSet.items.map(({ title, description }) => ({ title, desc: description })),
-        video: { src: mediaUrl(s.boxSet.video), poster: mediaUrl(s.boxSet.poster) },
+        video: { src: videoUrl(s.boxSet.video), poster: mediaUrl(s.boxSet.poster) },
       },
     },
     order: {

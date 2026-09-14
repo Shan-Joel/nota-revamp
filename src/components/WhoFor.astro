@@ -20,7 +20,7 @@ const { video, headlinePrefix, headlineItalic, paragraphs, audiences } = Astro.p
         muted
         loop
         playsinline
-        preload="metadata"
+        preload="none"
       />
       <div class="from-background/90 absolute inset-0 bg-gradient-to-t via-transparent to-transparent">
       </div>
@@ -53,6 +53,7 @@ const { video, headlinePrefix, headlineItalic, paragraphs, audiences } = Astro.p
 
 <script>
   import { initGsap } from "@/lib/motion";
+  import { autoplayWhenNear } from "@/lib/video";
 
   const root = document.querySelector<HTMLElement>("[data-who-for]");
 
@@ -69,8 +70,7 @@ const { video, headlinePrefix, headlineItalic, paragraphs, audiences } = Astro.p
           scrub: true,
         },
       });
-      video.muted = true;
-      void video.play().catch(() => {});
+      autoplayWhenNear(video);
     }
 
     if (reduced) return;

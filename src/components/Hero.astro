@@ -26,7 +26,7 @@ const { eyebrow, headlineLine1, headlineLine2, body, primaryCta, secondaryCta, i
   <!-- Three layers so each motion owns its transform: scroll travel, idle float, then the turn. -->
   <div class="hero-pen" role="img" aria-label={image.alt} data-hero-pen>
     <div class="absolute inset-0" data-hero-float>
-      <div class="absolute inset-0" data-hero-turn>
+      <div class="hero-turn absolute inset-0" data-hero-turn>
         <PenCutout src={image.src} loading="eager" fetchpriority="high" />
       </div>
     </div>
@@ -106,6 +106,20 @@ const { eyebrow, headlineLine1, headlineLine2, body, primaryCta, secondaryCta, i
     filter: blur(30px);
   }
 
+  /* The starting pose lives in CSS, so a cached image can't paint the pen upright before the intro takes over. */
+  .hero-pen,
+  .hero-light {
+    opacity: 0;
+  }
+
+  .hero-light {
+    transform: scale(1.5, 0.45);
+  }
+
+  .hero-turn {
+    transform: rotate(-90deg);
+  }
+
   /* A lit leading edge so each rising column reads against the dark hero. */
   .hero-curtain {
     background: linear-gradient(
@@ -141,15 +155,20 @@ const { eyebrow, headlineLine1, headlineLine2, body, primaryCta, secondaryCta, i
     gsap.set(light, { scaleX: 1.5, scaleY: 0.45 });
 
     if (reduced) {
-      gsap.set([chars, meta], { opacity: 1, y: 0 });
+      gsap.set([chars, meta, pen, light], { opacity: 1, y: 0 });
       return;
     }
 
     const intro = gsap.timeline({ delay: 1.9, defaults: { ease: "power3.out" } });
     intro
       .from(chars, { yPercent: 115, duration: 1.1, stagger: 0.018 })
-      .from(pen, { x: () => -innerWidth * 0.35, opacity: 0, duration: 2.2, ease: "expo.out" }, 0)
-      .from(light, { opacity: 0, duration: 1.8, ease: "power2.out" }, 0.3)
+      .fromTo(
+        pen,
+        { x: () => -innerWidth * 0.35, opacity: 0 },
+        { x: 0, opacity: 1, duration: 2.2, ease: "expo.out" },
+        0,
+      )
+      .to(light, { opacity: 1, duration: 1.8, ease: "power2.out" }, 0.3)
       .from(meta, { opacity: 0, y: 18, duration: 0.9, stagger: 0.12 }, 0.8);
 
     gsap.to(float, { y: -10, duration: 2.8, ease: "sine.inOut", yoyo: true, repeat: -1 });

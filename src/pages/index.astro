@@ -14,6 +14,15 @@ import SiteFooter from "@/components/SiteFooter.astro";
 import { getHomepageContent } from "@/content/homepage";
 
 const content = await getHomepageContent();
+
+// Open the connection to wherever the videos are hosted early, so they don't wait on a fresh handshake.
+const mediaOrigins = [
+  ...new Set(
+    [content.whoFor.video.src, content.insideBox.grid.video.src]
+      .map((src) => new URL(src, Astro.url).origin)
+      .filter((origin) => origin !== Astro.url.origin),
+  ),
+];
 ---
 
 <Layout
@@ -21,6 +30,7 @@ const content = await getHomepageContent();
   description={content.seo.description}
   themeColor={content.seo.themeColor}
   ogImage={content.seo.ogImage}
+  preconnect={mediaOrigins}
 >
   <div class="grain bg-background min-h-screen">
     <Preloader />

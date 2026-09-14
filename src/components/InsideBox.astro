@@ -78,7 +78,7 @@ const { frames, headline, headlineItalic, details, grid } = Astro.props;
           muted
           loop
           playsinline
-          preload="metadata"
+          preload="none"
         />
         <div class="from-background/60 absolute inset-0 bg-gradient-to-t via-transparent to-transparent">
         </div>
@@ -113,6 +113,7 @@ const { frames, headline, headlineItalic, details, grid } = Astro.props;
 
 <script>
   import { initGsap } from "@/lib/motion";
+  import { autoplayWhenNear } from "@/lib/video";
 
   const root = document.querySelector<HTMLElement>("[data-inside-box]");
 
@@ -157,10 +158,7 @@ const { frames, headline, headlineItalic, details, grid } = Astro.props;
     }
 
     const video = root.querySelector<HTMLVideoElement>("[data-box-video]");
-    if (video) {
-      video.muted = true;
-      void video.play().catch(() => {});
-    }
+    if (video) autoplayWhenNear(video);
 
     if (reduced) return;
     gsap.from(root.querySelectorAll("[data-box-item]"), {

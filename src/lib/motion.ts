@@ -12,6 +12,67 @@ type Setup = (ctx: MotionCtx) => void;
 
 const pending: { root: HTMLElement; setup: Setup }[] = [];
 let flushing: Promise<void> | undefined;
+let smoothScroll: InstanceType<typeof import("lenis").default> | undefined;
+
+/** Freezes page scrolling, smooth or native, while an overlay such as the mobile menu is open. */
+export function setScrollLocked(locked: boolean) {
+  document.documentElement.style.overflow = locked ? "hidden" : "";
+  if (locked) smoothScroll?.stop();
+  else smoothScroll?.start();
+}
+
+// In-page links glide past sections; a scene that holds the scroll must not hijack that trip.
+let navigatingUntil = 0;
+if (typeof document !== "undefined") {
+  document.addEventListener(
+    "click",
+    (e) => {
+      if ((e.target as Element | null)?.closest?.('a[href^="#"]')) {
+        navigatingUntil = performance.now() + 2500;
+      }
+    },
+    { capture: true },
+  );
+}
+
+const preventScroll = (e: Event) => e.preventDefault();
+
+/**
+ * Glides the page so `el`'s centre sits at `focus` (a fraction of the viewport height), then holds scrolling
+ * there until the returned release function is called. Does nothing while an in-page link is scrolling the page.
+ */
+export function holdScroll(el: HTMLElement, focus = 0.58): () => void {
+  if (performance.now() < navigatingUntil) return () => {};
+
+  const rect = el.getBoundingClientRect();
+  const target = window.scrollY + rect.top + rect.height / 2 - window.innerHeight * focus;
+  let released = false;
+
+  window.addEventListener("wheel", preventScroll, { passive: false });
+  window.addEventListener("touchmove", preventScroll, { passive: false });
+  document.documentElement.style.overflow = "hidden";
+  if (smoothScroll) {
+    smoothScroll.scrollTo(target, {
+      duration: 0.9,
+      lock: true,
+      force: true,
+      onComplete: () => {
+        if (!released) smoothScroll?.stop();
+      },
+    });
+  } else {
+    window.scrollTo({ top: target, behavior: "smooth" });
+  }
+
+  return () => {
+    if (released) return;
+    released = true;
+    window.removeEventListener("wheel", preventScroll);
+    window.removeEventListener("touchmove", preventScroll);
+    document.documentElement.style.overflow = "";
+    smoothScroll?.start();
+  };
+}
 
 export function initGsap(root: HTMLElement | null, setup: Setup) {
   if (!root) return;
@@ -49,7 +110,7 @@ function startSmoothScroll(
   Lenis: typeof import("lenis").default,
 ) {
   // Anchor targets already carry scroll-mt-20 for the fixed header, which Lenis honours.
-  const lenis = new Lenis({ lerp: 0.09, anchors: true });
+  const lenis = (smoothScroll = new Lenis({ lerp: 0.09, anchors: true }));
   lenis.on("scroll", ScrollTrigger.update);
   gsap.ticker.add((time) => lenis.raf(time * 1000));
   gsap.ticker.lagSmoothing(0);

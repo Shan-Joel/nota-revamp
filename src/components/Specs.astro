@@ -9,7 +9,17 @@ interface Props {
 }
 
 const { title, subtitle, groups, penImage } = Astro.props;
-const offsets = ["md:mt-0", "md:mt-24", "md:mt-48"];
+const offsets = ["md:mt-0", "md:mt-16", "md:mt-32"];
+
+// "nōta" in one continuous cursive stroke, then the t crossbar and the macron as separate strokes.
+const WORD =
+  "M40 310 C 80 300, 110 250, 130 190 C 128 230, 126 270, 125 300 C 135 230, 170 180, 200 185 C 225 190, 215 260, 222 295 C 228 312, 270 300, 292 225 C 300 190, 350 180, 360 215 C 372 255, 350 305, 318 302 C 288 300, 280 250, 292 225 C 300 205, 330 195, 385 200 C 405 196, 425 150, 437 80 C 433 150, 427 250, 433 290 C 439 310, 475 305, 505 270 C 520 245, 540 196, 565 193 C 525 188, 497 240, 505 275 C 513 305, 550 305, 570 270 C 575 235, 577 196, 583 189 C 579 230, 575 290, 595 300 C 615 308, 645 295, 665 275";
+const CROSSBAR = "M410 150 C 430 146, 455 145, 475 146";
+const MACRON = "M295 140 C 315 136, 340 135, 358 137";
+// Where the pen travels while lifted between strokes; never inked.
+const HOP_TO_CROSSBAR = "M665 275 C 640 200, 480 120, 410 150";
+const HOP_TO_MACRON = "M475 146 C 440 104, 330 104, 295 140";
+const strokes = [WORD, CROSSBAR, MACRON];
 ---
 
 <!-- overflow-x-clip, not overflow-hidden: the phone card stack relies on position: sticky. -->
@@ -20,73 +30,155 @@ const offsets = ["md:mt-0", "md:mt-24", "md:mt-48"];
       <h2 class="display text-5xl sm:text-7xl lg:text-8xl" data-specs-intro>{title}</h2>
     </header>
 
-    <div class="relative mt-6 sm:mt-16" data-specs-stage>
-      <!-- Phones: the pen gets its own band above the cards. Wider screens: it rises behind them. -->
-      <div
-        class="pointer-events-none relative flex h-[64svh] justify-center md:absolute md:inset-x-0 md:top-0 md:h-auto"
+    <div class="specs-stage relative mx-auto" data-specs-stage>
+      <div class="specs-glow pointer-events-none absolute -inset-[30%]" aria-hidden="true"></div>
+
+      <svg
+        class="specs-ink absolute inset-0 size-full"
+        viewBox="0 40 700 320"
+        fill="none"
         aria-hidden="true"
-        data-specs-band
       >
-        <div class="specs-glow absolute top-[8%] h-[min(70vh,44rem)] w-[min(38rem,80vw)]"></div>
-        <div class="relative h-full w-full md:h-[min(92vh,60rem)]" data-specs-pen>
-          <PenCutout src={penImage} class="rotate-180" />
+        <defs>
+          <linearGradient
+            id="specs-sheen"
+            gradientUnits="userSpaceOnUse"
+            x1="-200"
+            y1="0"
+            x2="0"
+            y2="0"
+            data-specs-sheen
+          >
+            <stop offset="0" class="sheen-stop" stop-opacity="0"></stop>
+            <stop offset="0.5" class="sheen-stop" stop-opacity="0.95"></stop>
+            <stop offset="1" class="sheen-stop" stop-opacity="0"></stop>
+          </linearGradient>
+        </defs>
+        {strokes.map((d) => <path d={d} class="ink" data-specs-ink />)}
+        <!-- The gradient is referenced by attribute: url(#…) in a stylesheet resolves against the CSS file, not this page. -->
+        <g class="sheen" stroke="url(#specs-sheen)">
+          {strokes.map((d) => <path d={d} />)}
+        </g>
+        <path d={HOP_TO_CROSSBAR} class="hop" data-specs-hop></path>
+        <path d={HOP_TO_MACRON} class="hop" data-specs-hop></path>
+      </svg>
+
+      <div class="specs-pen pointer-events-none absolute top-0 left-0" aria-hidden="true" data-specs-pen>
+        <div class="specs-lift absolute inset-0" data-specs-lift>
+          <PenCutout src={penImage} />
         </div>
       </div>
+    </div>
 
-      <div class="relative grid gap-4 md:grid-cols-3 md:gap-5 md:pt-[34vh]">
-        {
-          groups.map((g, i) => (
-            <article
-              data-spec-card
-              style={`--i:${i}`}
-              class:list={[
-                "border-border bg-surface rounded-md border p-7 shadow-[0_-24px_48px_-24px_rgb(0_0_0/0.7)] sm:p-9",
-                "max-md:sticky max-md:top-[calc(5.5rem+var(--i)*0.875rem)] max-md:origin-top",
-                "md:bg-surface/50 md:shadow-none md:backdrop-blur-xl",
-                offsets[i],
-              ]}
-            >
-              <h3 class="display text-2xl sm:text-3xl" data-spec-row>
-                {g.title}
-              </h3>
-              <ul class="mt-6">
-                {g.items.map((item) => (
-                  <li
-                    data-spec-row
-                    class="hairline text-foreground/85 flex items-center justify-between gap-4 py-3.5 text-[15px] leading-snug"
-                  >
-                    <span>{item}</span>
-                    <span class="bg-primary/70 size-1.5 shrink-0 rounded-full" aria-hidden="true" />
-                  </li>
-                ))}
-              </ul>
-            </article>
-          ))
-        }
-      </div>
+    <div class="mt-16 grid gap-4 sm:mt-24 md:grid-cols-3 md:gap-5" data-specs-cards>
+      {
+        groups.map((g, i) => (
+          <article
+            data-spec-card
+            style={`--i:${i}`}
+            class:list={[
+              "border-border bg-surface rounded-md border p-7 shadow-[0_-24px_48px_-24px_rgb(0_0_0/0.7)] sm:p-9",
+              "max-md:sticky max-md:top-[calc(5.5rem+var(--i)*0.875rem)] max-md:origin-top",
+              "md:bg-surface/50 md:shadow-none md:backdrop-blur-xl",
+              offsets[i],
+            ]}
+          >
+            <h3 class="display text-2xl sm:text-3xl" data-spec-row>
+              {g.title}
+            </h3>
+            <ul class="mt-6">
+              {g.items.map((item) => (
+                <li
+                  data-spec-row
+                  class="hairline text-foreground/85 flex items-center justify-between gap-4 py-3.5 text-[15px] leading-snug"
+                >
+                  <span>{item}</span>
+                  <span class="bg-primary/70 size-1.5 shrink-0 rounded-full" aria-hidden="true" />
+                </li>
+              ))}
+            </ul>
+          </article>
+        ))
+      }
     </div>
   </div>
 </section>
 
 <style>
+  /* Stage matches the word's 700×320 viewBox; the pen scales with it so its size suits the lettering. */
+  .specs-stage {
+    --w: min(56rem, 88vw);
+    width: var(--w);
+    aspect-ratio: 700 / 320;
+    margin-top: calc(var(--w) * 0.3);
+  }
+
   .specs-glow {
-    background: radial-gradient(closest-side, oklch(0.32 0.004 60 / 0.55), transparent);
-    filter: blur(24px);
+    background: radial-gradient(closest-side, oklch(0.3 0.006 260 / 0.55), transparent);
+    filter: blur(30px);
+  }
+
+  .specs-pen {
+    width: calc(var(--w) * 0.44);
+    height: calc(var(--w) * 0.44);
+  }
+
+  .specs-lift {
+    opacity: 0;
+  }
+
+  .specs-ink {
+    overflow: visible;
+    filter: drop-shadow(0 0 5px oklch(1 0 0 / 0.2));
+  }
+
+  .ink {
+    stroke: var(--color-foreground);
+    stroke-width: 5.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* Once written, a band of the accent red glints along the ink, as if the stroke were being captured. */
+  .sheen path {
+    stroke-width: 5.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .sheen-stop {
+    stop-color: var(--color-primary);
+  }
+
+  .hop {
+    stroke: none;
   }
 </style>
 
 <script>
-  import { initGsap } from "@/lib/motion";
+  import { MotionPathPlugin } from "gsap/MotionPathPlugin";
+  import { holdScroll, initGsap } from "@/lib/motion";
 
   const root = document.querySelector<HTMLElement>("[data-specs]");
 
-  initGsap(root, ({ gsap, root, reduced }) => {
-    if (reduced) return;
+  // Nib tip in the pen render's 1920×1080 frame, as a fraction of the square pen box (the image is height-fit and centred).
+  const NIB: [number, number] = [0.5 + (957 - 960) / 1080, 1002 / 1080];
+
+  initGsap(root, ({ gsap, ScrollTrigger, root, reduced }) => {
     const stage = root.querySelector<HTMLElement>("[data-specs-stage]");
-    const band = root.querySelector<HTMLElement>("[data-specs-band]");
     const pen = root.querySelector<HTMLElement>("[data-specs-pen]");
+    const lift = root.querySelector<HTMLElement>("[data-specs-lift]");
+    const sheen = root.querySelector<SVGLinearGradientElement>("[data-specs-sheen]");
+    const inks = [...root.querySelectorAll<SVGPathElement>("[data-specs-ink]")];
+    const [hopToCrossbar, hopToMacron] = root.querySelectorAll<SVGPathElement>("[data-specs-hop]");
+    const [word, crossbar, macron] = inks;
     const cards = [...root.querySelectorAll<HTMLElement>("[data-spec-card]")];
     const rows = (card: HTMLElement) => card.querySelectorAll("[data-spec-row]");
+    if (!stage || !pen || !lift || !sheen || !word || !crossbar || !macron) return;
+    if (!hopToCrossbar || !hopToMacron) return;
+
+    if (reduced) return;
+    gsap.registerPlugin(MotionPathPlugin);
 
     gsap.from(root.querySelectorAll("[data-specs-intro]"), {
       opacity: 0,
@@ -97,54 +189,106 @@ const offsets = ["md:mt-0", "md:mt-24", "md:mt-48"];
       scrollTrigger: { trigger: root, start: "top 75%", once: true },
     });
 
+    const along = (path: SVGPathElement) => ({ path, align: path, alignOrigin: NIB });
+    // Replaced while the scene is holding the page's scroll.
+    let release = () => {};
+
+    // Time-based rather than scrubbed, so the handwriting keeps an even, natural pace whatever the scroll speed.
+    const build = () => {
+      const tl = gsap.timeline({ paused: true, onComplete: () => release() });
+
+      gsap.set(pen, { x: 0, y: 0, rotation: 0 });
+      gsap.set(pen, { motionPath: { ...along(word), end: 0 }, rotation: 32 });
+      gsap.set(lift, { transformOrigin: `${NIB[0] * 100}% ${NIB[1] * 100}%` });
+      gsap.set(sheen, { attr: { x1: -200, x2: 0 } });
+      inks.forEach((ink) => {
+        const length = ink.getTotalLength();
+        // Hidden until its stroke starts: a zero-length dash still paints its round cap as a dot.
+        gsap.set(ink, { strokeDasharray: `${length} ${length * 2}`, strokeDashoffset: length, opacity: 0 });
+      });
+
+      // Pen and ink share duration and ease, so the line always ends exactly at the nib.
+      const stroke = (ink: SVGPathElement, duration: number, position?: string) =>
+        tl
+          .set(ink, { opacity: 1 }, position)
+          .to(pen, { motionPath: along(ink), duration, ease: "power1.inOut" }, "<")
+          .to(ink, { strokeDashoffset: 0, duration, ease: "power1.inOut" }, "<");
+      const hop = (path: SVGPathElement, duration: number) =>
+        tl
+          .to(pen, { motionPath: along(path), duration, ease: "power2.inOut" })
+          .to(lift, { y: -26, scale: 1.04, duration: duration / 2, ease: "power2.out", yoyo: true, repeat: 1 }, "<");
+
+      tl.fromTo(lift, { y: -60, opacity: 0 }, { y: 0, opacity: 1, duration: 0.9, ease: "power3.out" }).addLabel(
+        "write",
+        "-=0.15",
+      );
+      stroke(word, 3.6, "write");
+      tl.to(pen, { rotation: 26, duration: 0.9, ease: "sine.inOut", yoyo: true, repeat: 3 }, "write");
+      hop(hopToCrossbar, 0.7);
+      stroke(crossbar, 0.4);
+      hop(hopToMacron, 0.6);
+      stroke(macron, 0.4);
+      tl.to(lift, { y: -90, opacity: 0, duration: 0.9, ease: "power2.in" }, "+=0.15")
+        .to(sheen, { attr: { x1: 700, x2: 900 }, duration: 1.8, ease: "power2.inOut" }, "-=0.4");
+
+      return tl;
+    };
+
+    let tl = build();
+    // Once per visit: after the pen has finished, the word stays written and the reader scrolls past freely.
+    ScrollTrigger.create({
+      trigger: stage,
+      start: "center 75%",
+      once: true,
+      onEnter: () => {
+        // Arrived via a refresh further down the page: show the finished word instead of pulling the reader back.
+        if (stage.getBoundingClientRect().bottom < 0) {
+          tl.progress(1);
+          return;
+        }
+        // Hold the reader on the scene until the pen has finished; the timeline's onComplete lets go.
+        release = holdScroll(stage);
+        tl.play();
+      },
+    });
+
+    // Path points are measured in pixels; re-measure when the width changes (not on mobile URL-bar height changes).
+    let lastWidth = innerWidth;
+    let resizeTimer: number | undefined;
+    window.addEventListener("resize", () => {
+      if (innerWidth === lastWidth) return;
+      lastWidth = innerWidth;
+      clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(() => {
+        const progress = tl.progress();
+        const playing = tl.isActive();
+        tl.kill();
+        tl = build();
+        tl.progress(progress);
+        if (playing) tl.play();
+      }, 200);
+    });
+
     const mm = gsap.matchMedia();
 
-    // Wide screens: the pen rises through the stage while the cards drift up at staggered speeds.
     mm.add("(min-width: 48rem)", () => {
-      gsap.fromTo(
-        pen,
-        { yPercent: 45 },
-        {
-          yPercent: -6,
-          ease: "none",
-          scrollTrigger: { trigger: stage, start: "top bottom", end: "bottom top", scrub: 1 },
-        },
-      );
       cards.forEach((card, i) => {
-        gsap.fromTo(
-          card,
-          { y: 140 + i * 70 },
-          {
-            y: 0,
-            ease: "none",
-            scrollTrigger: { trigger: stage, start: "top bottom", end: "center 60%", scrub: 1 },
-          },
-        );
-        // Triggered by the stage: each card starts offset by its float, which would skew its own trigger.
+        const trigger = { trigger: card.parentElement, start: "top 85%", once: true };
+        gsap.from(card, { y: 90, opacity: 0, duration: 1.1, ease: "power3.out", delay: i * 0.12, scrollTrigger: trigger });
         gsap.from(rows(card), {
           opacity: 0,
           y: 16,
           duration: 0.7,
           ease: "power3.out",
           stagger: 0.06,
-          delay: i * 0.15,
-          scrollTrigger: { trigger: stage, start: "top 65%", once: true },
+          delay: 0.3 + i * 0.12,
+          scrollTrigger: trigger,
         });
       });
     });
 
-    // Phones: the pen straightens as it rises into view, then the cards stack like a deck.
+    // Phones: the cards stack like a deck, each receding as the next slides over it.
     mm.add("(max-width: 47.99rem)", () => {
-      gsap.fromTo(
-        pen,
-        { yPercent: 30, rotation: -14 },
-        {
-          yPercent: 0,
-          rotation: 0,
-          ease: "none",
-          scrollTrigger: { trigger: band, start: "top bottom", end: "bottom 75%", scrub: 1 },
-        },
-      );
       cards.forEach((card, i) => {
         gsap.from(rows(card), {
           opacity: 0,
@@ -156,7 +300,6 @@ const offsets = ["md:mt-0", "md:mt-24", "md:mt-48"];
         });
         const next = cards[i + 1];
         if (!next) return;
-        // Recede as the next card slides over it.
         gsap.to(card, {
           scale: 0.94,
           opacity: 0.45,

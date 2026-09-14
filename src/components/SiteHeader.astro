@@ -33,7 +33,7 @@ const { logo, logoHref = "#top", links, cta } = Astro.props;
       }
     </nav>
 
-    <div class="flex items-center gap-4">
+    <div class="flex items-center gap-3 sm:gap-4">
       <span
         id="site-header-progress-label"
         class="text-muted-foreground hidden text-[11px] tabular-nums sm:inline">0%</span
@@ -47,6 +47,17 @@ const { logo, logoHref = "#top", links, cta } = Astro.props;
           {cta.price}
         </span>
       </a>
+      <button
+        type="button"
+        id="site-menu-toggle"
+        class="menu-toggle border-border hover:border-foreground/40 relative size-10 shrink-0 rounded-full border transition-colors duration-300 lg:hidden"
+        aria-expanded="false"
+        aria-controls="site-menu"
+        aria-label="Open menu"
+      >
+        <span class="menu-bar" aria-hidden="true"></span>
+        <span class="menu-bar" aria-hidden="true"></span>
+      </button>
     </div>
   </div>
 
@@ -55,7 +66,122 @@ const { logo, logoHref = "#top", links, cta } = Astro.props;
   </div>
 </header>
 
+<div
+  id="site-menu"
+  class="site-menu bg-background/95 fixed inset-0 z-40 flex flex-col px-5 pt-24 pb-8 backdrop-blur-2xl sm:px-8 lg:hidden"
+  inert
+  data-lenis-prevent
+>
+  <nav aria-label="Menu" class="flex flex-1 flex-col justify-center">
+    <ul class="border-border border-b">
+      {
+        links.map((l, i) => (
+          <li class="hairline" style={`--i:${i}`}>
+            <a
+              href={l.href}
+              class="group flex items-baseline justify-between gap-4 py-5"
+              data-menu-link
+            >
+              <span class="display group-hover:text-primary text-5xl transition-colors duration-300 sm:text-6xl">
+                {l.label}
+              </span>
+              <span class="text-muted-foreground text-[11px] tracking-[0.2em] tabular-nums">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+
+  <a
+    href={cta.href}
+    class="bg-foreground text-background flex items-center justify-between rounded-full py-2 pr-2 pl-6 text-[14px] font-medium"
+    style={`--i:${links.length}`}
+    data-menu-link
+  >
+    <span>
+      {cta.label} <span class="opacity-55">{cta.price}</span>
+    </span>
+    <span class="bg-background/10 grid size-10 place-items-center rounded-full" aria-hidden="true">
+      <svg viewBox="0 0 16 16" class="size-3.5" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M2 8h11M9 4l4 4-4 4" stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg>
+    </span>
+  </a>
+</div>
+
+<style>
+  .menu-bar {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 1.5px;
+    margin: -0.75px 0 0 -8px;
+    background: currentColor;
+    transition: transform 0.5s cubic-bezier(0.76, 0, 0.24, 1);
+  }
+
+  .menu-bar:first-child {
+    transform: translateY(-3px);
+  }
+
+  .menu-bar:last-child {
+    transform: translateY(3px);
+  }
+
+  .menu-toggle[aria-expanded="true"] .menu-bar:first-child {
+    transform: rotate(45deg);
+  }
+
+  .menu-toggle[aria-expanded="true"] .menu-bar:last-child {
+    transform: rotate(-45deg);
+  }
+
+  /* The panel wipes down from the header, then the links rise in one after another. */
+  .site-menu {
+    clip-path: inset(0 0 100% 0);
+    visibility: hidden;
+    transition:
+      clip-path 0.8s cubic-bezier(0.76, 0, 0.24, 1),
+      visibility 0s linear 0.8s;
+  }
+
+  .site-menu[data-open] {
+    clip-path: inset(0 0 0 0);
+    visibility: visible;
+    transition: clip-path 0.8s cubic-bezier(0.76, 0, 0.24, 1);
+  }
+
+  .site-menu [data-menu-link] {
+    opacity: 0;
+    transform: translateY(32px);
+    transition:
+      transform 0.9s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 0.5s ease;
+  }
+
+  .site-menu[data-open] [data-menu-link] {
+    opacity: 1;
+    transform: none;
+    transition-delay: calc(0.3s + var(--i) * 0.06s);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .site-menu,
+    .site-menu [data-menu-link],
+    .menu-bar {
+      transition-duration: 0.01ms !important;
+      transition-delay: 0s !important;
+    }
+  }
+</style>
+
 <script>
+  import { setScrollLocked } from "@/lib/motion";
+
   const header = document.getElementById("site-header");
   const progressLabel = document.getElementById("site-header-progress-label");
   const progressBar = document.getElementById("site-header-progress-bar");
@@ -79,4 +205,32 @@ const { logo, logoHref = "#top", links, cta } = Astro.props;
   onScroll();
   window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("resize", onScroll);
+
+  const toggle = document.getElementById("site-menu-toggle");
+  const menu = document.getElementById("site-menu");
+
+  if (toggle && menu) {
+    const isOpen = () => menu.hasAttribute("data-open");
+    const setOpen = (open: boolean) => {
+      toggle.setAttribute("aria-expanded", String(open));
+      toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+      menu.toggleAttribute("data-open", open);
+      menu.inert = !open;
+      setScrollLocked(open);
+    };
+
+    toggle.addEventListener("click", () => setOpen(!isOpen()));
+    // Unlock before the anchor's own scroll handling runs, so the page can glide to the section.
+    menu
+      .querySelectorAll("[data-menu-link]")
+      .forEach((link) => link.addEventListener("click", () => setOpen(false)));
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape" || !isOpen()) return;
+      setOpen(false);
+      toggle.focus();
+    });
+    window.matchMedia("(min-width: 64rem)").addEventListener("change", (e) => {
+      if (e.matches && isOpen()) setOpen(false);
+    });
+  }
 </script>

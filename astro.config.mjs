@@ -18,6 +18,6 @@ export default defineConfig({
     // Strapi lives in cms/ and rewrites files there while running; keep Astro's dev watcher out of it.
     server: { watch: { ignored: ["**/cms/**"] } },
     // Pre-bundle the animation libraries at startup; lazy discovery re-optimizes mid-session and 504s open pages.
-    optimizeDeps: { include: ["gsap", "gsap/ScrollTrigger", "lenis"] },
+    optimizeDeps: { include: ["gsap", "gsap/ScrollTrigger", "gsap/MotionPathPlugin", "lenis"] },
   },
 });
