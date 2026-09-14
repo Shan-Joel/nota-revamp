@@ -24,7 +24,7 @@ const strokes = [WORD, CROSSBAR, MACRON];
 
 <!-- overflow-x-clip, not overflow-hidden: the phone card stack relies on position: sticky. -->
 <section id="specifications" data-specs class="relative scroll-mt-20 overflow-x-clip">
-  <div class="mx-auto max-w-[1600px] px-5 pt-28 pb-32 sm:px-8 sm:pt-36">
+  <div class="mx-auto max-w-[1600px] px-5 py-18 sm:px-8 sm:py-26">
     <header class="text-center">
       <p class="eyebrow mb-6" data-specs-intro>{subtitle}</p>
       <h2 class="display text-5xl sm:text-7xl lg:text-8xl" data-specs-intro>{title}</h2>
@@ -63,7 +63,11 @@ const strokes = [WORD, CROSSBAR, MACRON];
         <path d={HOP_TO_MACRON} class="hop" data-specs-hop></path>
       </svg>
 
-      <div class="specs-pen pointer-events-none absolute top-0 left-0" aria-hidden="true" data-specs-pen>
+      <div
+        class="specs-pen pointer-events-none absolute top-0 left-0"
+        aria-hidden="true"
+        data-specs-pen
+      >
         <div class="specs-lift absolute inset-0" data-specs-lift>
           <PenCutout src={penImage} />
         </div>
@@ -204,7 +208,11 @@ const strokes = [WORD, CROSSBAR, MACRON];
       inks.forEach((ink) => {
         const length = ink.getTotalLength();
         // Hidden until its stroke starts: a zero-length dash still paints its round cap as a dot.
-        gsap.set(ink, { strokeDasharray: `${length} ${length * 2}`, strokeDashoffset: length, opacity: 0 });
+        gsap.set(ink, {
+          strokeDasharray: `${length} ${length * 2}`,
+          strokeDashoffset: length,
+          opacity: 0,
+        });
       });
 
       // Pen and ink share duration and ease, so the line always ends exactly at the nib.
@@ -214,22 +222,39 @@ const strokes = [WORD, CROSSBAR, MACRON];
           .to(pen, { motionPath: along(ink), duration, ease: "power1.inOut" }, "<")
           .to(ink, { strokeDashoffset: 0, duration, ease: "power1.inOut" }, "<");
       const hop = (path: SVGPathElement, duration: number) =>
-        tl
-          .to(pen, { motionPath: along(path), duration, ease: "power2.inOut" })
-          .to(lift, { y: -26, scale: 1.04, duration: duration / 2, ease: "power2.out", yoyo: true, repeat: 1 }, "<");
+        tl.to(pen, { motionPath: along(path), duration, ease: "power2.inOut" }).to(
+          lift,
+          {
+            y: -26,
+            scale: 1.04,
+            duration: duration / 2,
+            ease: "power2.out",
+            yoyo: true,
+            repeat: 1,
+          },
+          "<",
+        );
 
-      tl.fromTo(lift, { y: -60, opacity: 0 }, { y: 0, opacity: 1, duration: 0.9, ease: "power3.out" }).addLabel(
-        "write",
-        "-=0.15",
-      );
+      tl.fromTo(
+        lift,
+        { y: -60, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.9, ease: "power3.out" },
+      ).addLabel("write", "-=0.15");
       stroke(word, 3.6, "write");
-      tl.to(pen, { rotation: 26, duration: 0.9, ease: "sine.inOut", yoyo: true, repeat: 3 }, "write");
+      tl.to(
+        pen,
+        { rotation: 26, duration: 0.9, ease: "sine.inOut", yoyo: true, repeat: 3 },
+        "write",
+      );
       hop(hopToCrossbar, 0.7);
       stroke(crossbar, 0.4);
       hop(hopToMacron, 0.6);
       stroke(macron, 0.4);
-      tl.to(lift, { y: -90, opacity: 0, duration: 0.9, ease: "power2.in" }, "+=0.15")
-        .to(sheen, { attr: { x1: 700, x2: 900 }, duration: 1.8, ease: "power2.inOut" }, "-=0.4");
+      tl.to(lift, { y: -90, opacity: 0, duration: 0.9, ease: "power2.in" }, "+=0.15").to(
+        sheen,
+        { attr: { x1: 700, x2: 900 }, duration: 1.8, ease: "power2.inOut" },
+        "-=0.4",
+      );
 
       return tl;
     };
@@ -274,7 +299,14 @@ const strokes = [WORD, CROSSBAR, MACRON];
     mm.add("(min-width: 48rem)", () => {
       cards.forEach((card, i) => {
         const trigger = { trigger: card.parentElement, start: "top 85%", once: true };
-        gsap.from(card, { y: 90, opacity: 0, duration: 1.1, ease: "power3.out", delay: i * 0.12, scrollTrigger: trigger });
+        gsap.from(card, {
+          y: 90,
+          opacity: 0,
+          duration: 1.1,
+          ease: "power3.out",
+          delay: i * 0.12,
+          scrollTrigger: trigger,
+        });
         gsap.from(rows(card), {
           opacity: 0,
           y: 16,
