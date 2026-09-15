@@ -30,7 +30,7 @@ nōta is a single-page product experience built for speed and editability:
 
 - **Fast by default** — pages are pre-rendered to static HTML and served from Vercel's edge CDN. No server runs per request.
 - **Fully editable** — every headline, paragraph, image and video comes from Strapi. Editors publish; the site rebuilds itself.
-- **Motion-led storytelling** — pinned, scroll-driven scenes (GSAP + Lenis) walk the visitor through the product, and all of them respect `prefers-reduced-motion`.
+- **Motion-led storytelling** — pinned, scroll-driven scenes (GSAP + Lenis) walk the visitor through the product.
 
 ## Tech stack
 
@@ -196,3 +196,34 @@ Open `http://localhost:4321`. In development, refreshing the page shows the late
 | `CLOUDINARY_NAME`, `CLOUDINARY_KEY`, `CLOUDINARY_SECRET`                                                | Cloudinary credentials for media uploads              |
 | `VERCEL_DEPLOY_HOOK_URL`                                                                                | Deploy hook called on publish to rebuild the site     |
 | `APP_KEYS`, `API_TOKEN_SALT`, `ADMIN_JWT_SECRET`, `JWT_SECRET`, `TRANSFER_TOKEN_SALT`, `ENCRYPTION_KEY` | Strapi security secrets                               |
+
+## Why Astro (and Strapi)
+
+- **Content-first, not app-first.** nōta is a marketing page with rich motion but very little application state. Astro renders it to static HTML and ships zero framework JavaScript by default. Only the small scripts each section needs are sent to the browser.
+- **Static output, edge-fast.** Pre-rendered pages load straight from Vercel's CDN, with no server to scale, patch or pay for per request.
+- **Build-time data fits a headless CMS.** Content is fetched once, in typed component frontmatter, so visitors never wait on the CMS.
+- **Strapi** was chosen as an open-source, self-hostable CMS whose component-based modelling mirrors the page's sections one-to-one, with an admin panel non-technical editors can use on day one.
+
+## Key trade-offs
+
+| Decision                                                | Benefit                                                        | Cost                                                                                                                 |
+| ------------------------------------------------------- | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Static generation instead of server rendering           | Fastest possible load, no runtime server, minimal hosting cost | Content changes need a rebuild (about 5–6 seconds) and drafts can't be previewed on the live site                    |
+| Holding scroll during the handwriting scene             | Every visitor sees the key brand moment                        | Briefly takes control from the user; mitigated by once per visit, nav links bypassing it, and reduced-motion opt-out |
+| Plain GSAP in Astro components instead of React islands | Far less JavaScript shipped                                    | Imperative DOM code instead of declarative components                                                                |     |
+
+## What I'd improve with more time
+
+- **Draft previews** — a server-rendered preview route using Strapi's draft API, so editors can review changes before publishing.
+- **Smarter rebuilds** — debounce the deploy hook so several quick publishes trigger a single build.
+- **Accessibility polish** — focus trapping in the mobile menu, and showing one caption at a time in the sync scene for reduced-motion visitors.
+- **True product assets** — transparent or 3D pen renders to replace the traced cutout.
+- **Resilience and reach** — build against cached content if Strapi is unreachable, localisation with Strapi i18n, and privacy-friendly analytics.
+
+## AI tools used
+
+| Tool                        | How it was used                                                                                                                                                               |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Claude Code** (Anthropic) | Used Claude AI coding agent as a development pair programmer to assist with the Astro migration, Strapi setup, deployment pipeline, animations, debugging, and documentation. |
+
+Every AI-assisted change was reviewed, tested in the browser, and approved by me before being committed.
