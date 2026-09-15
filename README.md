@@ -225,5 +225,46 @@ Open `http://localhost:4321`. In development, refreshing the page shows the late
 | Tool                        | How it was used                                                                                                                                                               |
 | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Claude Code** (Anthropic) | Used Claude AI coding agent as a development pair programmer to assist with the Astro migration, Strapi setup, deployment pipeline, animations, debugging, and documentation. |
+| **Lovable**                 | Used to explore early design ideas and layout directions for the site before building it out.                                                                                 |
 
 Every AI-assisted change was reviewed, tested in the browser, and approved by me before being committed.
+
+## Performance
+
+Lighthouse results from [PageSpeed Insights](https://pagespeed.web.dev/analysis/https-nota-revamp-vercel-app/g9al4616ep?form_factor=mobile) for the live site, 15 September 2026.
+
+<table>
+  <tr>
+    <th width="50%">Mobile</th>
+    <th width="50%">Desktop</th>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="https://img.shields.io/badge/Performance-99-0CCE6B?style=for-the-badge&logo=lighthouse&logoColor=white" alt="Performance 99" />
+      <img src="https://img.shields.io/badge/Accessibility-100-0CCE6B?style=for-the-badge" alt="Accessibility 100" />
+      <img src="https://img.shields.io/badge/Best_Practices-100-0CCE6B?style=for-the-badge" alt="Best Practices 100" />
+    </td>
+    <td align="center">
+      <img src="https://img.shields.io/badge/Performance-99-0CCE6B?style=for-the-badge&logo=lighthouse&logoColor=white" alt="Performance 99" />
+      <img src="https://img.shields.io/badge/Accessibility-100-0CCE6B?style=for-the-badge" alt="Accessibility 100" />
+      <img src="https://img.shields.io/badge/Best_Practices-100-0CCE6B?style=for-the-badge" alt="Best Practices 100" />
+    </td>
+  </tr>
+  <tr>
+    <td><img src="docs/pagespeed/mobile.png" alt="PageSpeed Insights mobile report: Performance 99, Accessibility 100, Best Practices 100" /></td>
+    <td><img src="docs/pagespeed/desktop.png" alt="PageSpeed Insights desktop report: Performance 99, Accessibility 100, Best Practices 100" /></td>
+  </tr>
+</table>
+
+| Core metric              | Mobile | Desktop |
+| ------------------------ | :----: | :-----: |
+| First Contentful Paint   | 1.1 s  |  0.3 s  |
+| Largest Contentful Paint | 2.0 s  |  0.7 s  |
+| Total Blocking Time      | 30 ms  |  50 ms  |
+| Cumulative Layout Shift  | 0.032  |  0.001  |
+| Speed Index              | 2.9 s  |  1.2 s  |
+
+**How mobile reached 99** (up from 78): fonts are self-hosted with preloads and size-matched fallbacks, CSS is inlined, images are served as AVIF/WebP through Cloudinary (about 75% lighter), and the hero's largest element no longer waits for JavaScript to appear.
+
+> [!NOTE]
+> SEO shows **66 by design**. This preview deployment is marked `noindex` so it stays out of search results; removing it restores a full SEO score.
