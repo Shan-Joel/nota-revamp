@@ -23,11 +23,13 @@ const { eyebrow, headlineLine1, headlineLine2, body, primaryCta, secondaryCta, i
   <div class="hero-studio absolute inset-0" aria-hidden="true"></div>
   <div class="hero-light" data-hero-light aria-hidden="true"></div>
 
-  <!-- Three layers so each motion owns its transform: scroll travel, idle float, then the turn. -->
+  <!-- Layers so each motion owns its transform: scroll travel, CSS entrance, idle float, then the turn. -->
   <div class="hero-pen" role="img" aria-label={image.alt} data-hero-pen>
-    <div class="absolute inset-0" data-hero-float>
-      <div class="hero-turn absolute inset-0" data-hero-turn>
-        <PenCutout src={image.src} loading="eager" fetchpriority="high" />
+    <div class="hero-enter absolute inset-0">
+      <div class="absolute inset-0" data-hero-float>
+        <div class="hero-turn absolute inset-0" data-hero-turn>
+          <PenCutout src={image.src} loading="eager" fetchpriority="high" />
+        </div>
       </div>
     </div>
   </div>
@@ -107,13 +109,43 @@ const { eyebrow, headlineLine1, headlineLine2, body, primaryCta, secondaryCta, i
   }
 
   /* The starting pose lives in CSS, so a cached image can't paint the pen upright before the intro takes over. */
-  .hero-pen,
+  .hero-enter,
   .hero-light {
     opacity: 0;
   }
 
+  /* Its own layer: GSAP folds CSS translate into its transform on any element it animates. */
+  .hero-enter {
+    translate: -35vw 0;
+  }
+
   .hero-light {
     transform: scale(1.5, 0.45);
+  }
+
+  /*
+   * The entrance runs in CSS as soon as the preloader lifts, so the pen (the page's largest paint)
+   * doesn't wait for GSAP to download. Same slide and expo-out easing as before.
+   */
+  :global(html[data-preloaded]) .hero-enter {
+    opacity: 1;
+    translate: 0 0;
+    transition:
+      opacity 2.2s cubic-bezier(0.16, 1, 0.3, 1),
+      translate 2.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  :global(html[data-preloaded]) .hero-light {
+    opacity: 1;
+    transition: opacity 1.8s ease-out 0.3s;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-enter,
+    .hero-light {
+      opacity: 1;
+      translate: none;
+    }
   }
 
   .hero-turn {
@@ -159,16 +191,17 @@ const { eyebrow, headlineLine1, headlineLine2, body, primaryCta, secondaryCta, i
       return;
     }
 
-    const intro = gsap.timeline({ delay: 1.9, defaults: { ease: "power3.out" } });
+    // Starts the moment the preloader lifts, not on a fixed delay, so slow phones don't sit on an empty hero.
+    const intro = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+    const preloaded = new Promise<void>((resolve) => {
+      const done = document.documentElement.hasAttribute("data-preloaded");
+      if (done || !document.getElementById("preloader")) resolve();
+      else window.addEventListener("preloader:done", () => resolve(), { once: true });
+    });
+    void preloaded.then(() => intro.play());
+    // The pen and its light enter through CSS (see styles) the moment the preloader lifts.
     intro
       .from(chars, { yPercent: 115, duration: 1.1, stagger: 0.018 })
-      .fromTo(
-        pen,
-        { x: () => -innerWidth * 0.35, opacity: 0 },
-        { x: 0, opacity: 1, duration: 2.2, ease: "expo.out" },
-        0,
-      )
-      .to(light, { opacity: 1, duration: 1.8, ease: "power2.out" }, 0.3)
       .from(meta, { opacity: 0, y: 18, duration: 0.9, stagger: 0.12 }, 0.8);
 
     gsap.to(float, { y: -10, duration: 2.8, ease: "sine.inOut", yoyo: true, repeat: -1 });

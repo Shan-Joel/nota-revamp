@@ -18,7 +18,14 @@ const mask = `url("data:image/svg+xml,${encodeURIComponent(
 ---
 
 <div class:list={["pen-cutout", className]} style={`--pen-mask:${mask}`} aria-hidden="true">
-  <img src={src} alt="" loading={loading} fetchpriority={fetchpriority} />
+  <img
+    src={src}
+    alt=""
+    width="1920"
+    height="1080"
+    loading={loading}
+    fetchpriority={fetchpriority}
+  />
 </div>
 
 <style>

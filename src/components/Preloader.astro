@@ -12,7 +12,8 @@
   </span>
 </div>
 
-<script>
+<!-- Inline so the counter starts as the HTML arrives, instead of after a script download. -->
+<script is:inline>
   const el = document.getElementById("preloader");
   const valueEl = document.getElementById("preloader-value");
   if (el && valueEl) {
@@ -20,7 +21,7 @@
     const duration = reduced ? 250 : 1500;
     const start = performance.now();
 
-    const tick = (now: number) => {
+    const tick = (now) => {
       const t = Math.min(1, (now - start) / duration);
       // ease-out so the counter decelerates into 100
       valueEl.textContent = String(Math.round((1 - Math.pow(1 - t, 3)) * 100));
@@ -30,6 +31,9 @@
         window.setTimeout(() => {
           el.classList.replace("opacity-100", "opacity-0");
           el.classList.add("pointer-events-none");
+          // The hero starts its intro on this signal instead of guessing how long the preloader takes.
+          document.documentElement.dataset["preloaded"] = "";
+          window.dispatchEvent(new Event("preloader:done"));
         }, 220);
       }
     };

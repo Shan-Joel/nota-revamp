@@ -141,17 +141,22 @@ const mediaUrl = (media: Media) => new URL(media.url, STRAPI_URL).toString();
 const videoUrl = (media: Media) =>
   mediaUrl(media).replace("/video/upload/", "/video/upload/f_auto:video,q_auto/");
 
+// Page images get the same treatment: Cloudinary picks AVIF/WebP per browser and tunes quality.
+// (The OG image keeps its original URL, since social crawlers expect a plain JPEG or PNG.)
+const imageUrl = (media: Media) =>
+  mediaUrl(media).replace("/image/upload/", "/image/upload/f_auto,q_auto/");
+
 const link = ({ label, href }: NavLink): NavLink => ({ label, href });
 
 const image = (media: Media, alt: string | null) => ({
-  src: mediaUrl(media),
+  src: imageUrl(media),
   alt: alt || media.alternativeText || "",
 });
 
 // Only the first frame of a sequence is announced; the rest are decorative crossfades.
 const frames = (list: Media[], firstAlt: string | null) =>
   list.map((media, i) => ({
-    src: mediaUrl(media),
+    src: imageUrl(media),
     alt: i === 0 ? firstAlt || media.alternativeText || "" : "",
   }));
 
@@ -218,7 +223,7 @@ export function toHomepageContent(s: StrapiHomepage): HomepageContent {
         headingItalic: s.boxSet.headingItalic,
         paragraph: s.boxSet.paragraph,
         items: s.boxSet.items.map(({ title, description }) => ({ title, desc: description })),
-        video: { src: videoUrl(s.boxSet.video), poster: mediaUrl(s.boxSet.poster) },
+        video: { src: videoUrl(s.boxSet.video), poster: imageUrl(s.boxSet.poster) },
       },
     },
     order: {
